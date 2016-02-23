@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3.4
 """
 Created on Mon Jan 25 20:03:09 2016
 
@@ -44,7 +45,7 @@ west_end_poly = [[49.284327, -123.120926],
                 [49.275788, -123.135817],
                 [49.276852, -123.132470]]
                 
-west_end_path = mplPath.Path(np.array(yaletown_poly))
+west_end_path = mplPath.Path(np.array(west_end_poly))
                 
 downtown_poly = [[49.289977, -123.146357],
                 [49.275646, -123.135676],
@@ -54,12 +55,12 @@ downtown_poly = [[49.289977, -123.146357],
                 [49.289502, -123.113220],
                 [49.295004, -123.135918]]
                 
-downtown_path = mplPath.Path(np.array(yaletown_poly))
+downtown_path = mplPath.Path(np.array(downtown_poly))
                 
 # run once
 # c.execute('''CREATE TABLE apartments (date text, id text, title text, latitude real, longitude real, address text, date_available text, price integer, area integer)''')
 
-for entry in apts.entries:
+for entry in reversed(apts.entries):
     # Grab some in info from the entry
     post_date = entry.updated
     post_id = entry.id
@@ -85,11 +86,11 @@ for entry in apts.entries:
         if gastown_path.contains_point((latitude, longitude)):
             neighbourhood = "gastown"
         elif yaletown_path.contains_point((latitude, longitude)):
-            neighbhourhood = "yaletown"
+            neighbourhood = "yaletown"
         elif west_end_path.contains_point((latitude, longitude)):
-            neighbhourhood = "west end"
+            neighbourhood = "west end"
         elif downtown_path.contains_point((latitude, longitude)):
-            neighbhourhood = "downtown"
+            neighbourhood = "downtown"
         else:
             neighbourhood = None
          # we can live without this stuff
@@ -105,7 +106,7 @@ for entry in apts.entries:
         try: 
             price = int(tree.xpath('//*[@id="pagecontainer"]/section/h2/span[2]/span[1]/text()')[0][1:]) 
         except: price = None
-                
+   
         # Save the entry to the database
         c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood])
         conn.commit()
@@ -113,3 +114,4 @@ for entry in apts.entries:
     time.sleep(5) 
     
 c.close()
+
