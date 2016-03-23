@@ -13,6 +13,7 @@ import sqlite3
 import time
 import numpy as np
 import matplotlib.path as mplPath
+from functions import gastown_filter
 
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
 url = "http://vancouver.craigslist.ca/search/apa?format=rss"
@@ -106,9 +107,23 @@ for entry in reversed(apts.entries):
         try: 
             price = int(tree.xpath('//*[@id="pagecontainer"]/section/h2/span[2]/span[1]/text()')[0][1:]) 
         except: price = None
-   
+        # //*[@id="pagecontainer"]/section/section/div[1]/p[2]
+        try: 
+            extras = []
+            for i in range(1,10):
+                extra_info = (tree.xpath('//*[@id="pagecontainer"]/section/section/div[1]/p[2]/span[%d]/text()' % i))
+                if not extra_info:
+                    break
+                else:
+                    extras.append(extra_info[0])
+            extras = ",".join(extras)
+        except: extras = None
         # Save the entry to the database
-        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood])
+
+        listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras]
+        gastown_filter(listing)
+        
+        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras])
         conn.commit()
         print("Added entry %s to db" % post_id)
     time.sleep(5) 
