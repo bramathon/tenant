@@ -98,12 +98,29 @@ for entry in reversed(apts.entries):
         try: 
             address = tree.xpath('//*[@id="pagecontainer"]/section/section/div[1]/div[1]/div[2]/text()')[0] 
         except: address = None
-        try: 
-            date_available = tree.xpath('//*[@id="pagecontainer"]/section/section/div[1]/p[1]/span[3]/text()')[0] 
-        except: date_available = None
-        try: 
-            area = int(tree.xpath('//*[@id="pagecontainer"]/section/section/div[1]/p[1]/span[2]/b/text()')[0]) 
-        except: area = None
+        try:
+            bathrooms = None
+            bedrooms = None
+            area = None
+            date_available = None
+            for i in range(1,4):
+                info = (tree.xpath('//*[@id="pagecontainer"]/section/section/div[1]/p[1]/span[%d]/text()' % i))
+                if not info:
+                    break
+                if info[0] == 'BR / ':
+                    bedrooms = (tree.xpath('//*[@id="pagecontainer"]/section/section/div[1]/p[1]/span[%d]/b/text()' % i))[0]
+                    if len(info) > 1:
+                        if info[1] == 'Ba':
+                            bathrooms = (tree.xpath('//*[@id="pagecontainer"]/section/section/div[1]/p[1]/span[%d]/b/text()' % i))[1]
+                elif info[0] == 'ft':
+                    area = (tree.xpath('//*[@id="pagecontainer"]/section/section/div[1]/p[1]/span[%d]/b/text()' % i))[0]
+                elif info[0][:9] == 'available': #only other option is availability
+                    date_available = info[10:]
+        except: 
+            bathrooms = None
+            bedrooms = None
+            area = None
+            date_available = None
         try: 
             price = int(tree.xpath('//*[@id="pagecontainer"]/section/h2/span[2]/span[1]/text()')[0][1:]) 
         except: price = None
@@ -123,7 +140,7 @@ for entry in reversed(apts.entries):
         listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras]
         gastown_filter(listing)
         
-        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras])
+        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms])
         conn.commit()
         print("Added entry %s to db" % post_id)
     time.sleep(5) 
