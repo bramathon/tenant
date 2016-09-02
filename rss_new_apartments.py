@@ -140,7 +140,7 @@ for entry in reversed(apts.entries):
         listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras]
         gastown_filter(listing)
         
-        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms])
+        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms])
         conn.commit()
         print("Added entry %s to db" % post_id)
     time.sleep(5) 
