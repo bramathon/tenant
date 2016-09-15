@@ -18,7 +18,7 @@ from functions import gastown_filter
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
 url = "http://vancouver.craigslist.ca/search/apa?format=rss"
 apts = feedparser.parse( url )
-conn = sqlite3.connect('/home/bram/Documents/craiglist_crawler/apartments.db')
+conn = sqlite3.connect('/home/ubuntu/craiglist_crawler/apartments.db')
 c = conn.cursor()
 
 gastown_poly = [[49.285169, -123.110794],
@@ -140,7 +140,7 @@ for entry in reversed(apts.entries):
         listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras]
         gastown_filter(listing)
         
-        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms])
+        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms])
         conn.commit()
         print("Added entry %s to db" % post_id)
     time.sleep(5) 
