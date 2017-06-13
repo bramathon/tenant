@@ -15,6 +15,9 @@ import numpy as np
 from functions import *
 from bs4 import BeautifulSoup
 import re, requests
+from neighbourhoods import hoods
+import pandas as pd
+import matplotlib.path as mplPath
 
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
 url = "http://vancouver.craigslist.ca/search/apa?format=rss"
@@ -117,7 +120,18 @@ def get_date_available(soup):
     return None
 
 def get_neighbourhood(latitude,longitude):
-    return None
+    # or, grab small from postig title text
+    try:
+    neighbourhood = None
+    for k,v in hoods.items():
+        if mplPath.Path(v.as_matrix()).contains_point((longitude,latitude)): # for some reason, files are long,lat
+            neighbourhood = k
+            break
+        if neighbourhood == None:
+            neighbourhood = re.sub('[()]', '', soup.select('.postingtitletext')[0].small.find(text=True, recursive=False).strip())
+    except:
+        neighbourhood = None
+    return neighbourhood
 
 for entry in reversed(apts.entries):
     # Grab some in info from the entry
