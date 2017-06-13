@@ -91,9 +91,11 @@ def get_area(soup):
     try:
         attr = soup.select('.attrgroup')[0]
         area = None
+        prev_s = None
         for s in attr.strings:
             if s.find("ft") != -1:
-                area = parse_int(s.find(text=True, recursive=False).strip())
+                area = parse_int(prev_s)
+            prev_s = s
     except:
         area = None
     return area
