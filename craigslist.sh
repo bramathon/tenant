@@ -1,3 +1,3 @@
 #!/bin/bash
 
-/usr/bin/python3.4 /home/bram/Documents/craiglist_crawler/rss_new_apartments.py
+/home/ubuntu/anaconda3/bin/python3 /home/ubuntu/craiglist_crawler/rss_new_apartments.py
