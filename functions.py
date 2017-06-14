@@ -11,8 +11,10 @@ import sqlite3
 from datetime import timedelta, datetime
 #import plotly
 from geopy import distance
-from keys import gmail_password, my_email, destination_email
-
+import matplotlib.path as mplPath
+import numpy as np
+import neighbourhoods
+#from keys import gmail_password, my_email, destination_email
 
 def find_similar_listings(latitude,longitude,area):
     # find similar listings for comparison (max 5)
