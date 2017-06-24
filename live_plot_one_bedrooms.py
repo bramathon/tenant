@@ -26,7 +26,7 @@ layout = go.Layout(
 )
 
 fig = go.Figure(data=data, layout=layout)
-plot_url = py.plot(fig, filename='1bed-rent')
+# plot_url = py.plot(fig, filename='1bed-rent')
 
 s_1 = py.Stream(stream_id=token_1)
 
@@ -47,9 +47,7 @@ def another_one(time):
 s_1.open()
 current_listing_time = '2017-06-13T20:00:17-07:00' # starttime
 time_between_points = 45
-s_1.open()
-current_listing_time = '2017-06-13T20:00:17-07:00'
-time_between_points = 30
+
 while True:
     listing = another_one(current_listing_time)
     if listing == None:
@@ -70,10 +68,11 @@ while True:
             hover_text = neighbourhood
         else:
             hover_text = ""
+
+        print(hover_text)
         x = datetime.datetime.strptime(current_listing_time[0:19], '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
         y = price
         if price < 3500 and price > 500 and in_vancouver(neighbourhood): # outliers
             s_1.write(dict(x=x,y=y,text=hover_text))
-            print(hover_text)
             time.sleep(time_between_points)
 s_1.close()
