@@ -26,12 +26,9 @@ layout = go.Layout(
 )
 
 fig = go.Figure(data=data, layout=layout)
-# plot_url = py.plot(fig, filename='1bed-rent')
+plot_url = py.plot(fig, filename='1bed-rent',auto_open=False)
 
 s_1 = py.Stream(stream_id=token_1)
-
-conn = sqlite3.connect('apartments.db')
-c = conn.cursor()
 
 def in_vancouver(neighbourhood):
     in_town = False
@@ -41,8 +38,14 @@ def in_vancouver(neighbourhood):
     return in_town
 
 def another_one(time):
-    c.execute('SELECT * FROM apartments WHERE strftime("%s", date) > strftime("%s", ?) AND bedrooms = 1', (time,))
-    return c.fetchone()
+    try:
+        conn = sqlite3.connect('apartments.db')
+        c = conn.cursor()
+        c.execute('SELECT * FROM apartments WHERE strftime("%s", date) > strftime("%s", ?) AND bedrooms = 1', (time,))
+        record = c.fetchone()
+        c.close()
+    except:
+        record = None    
 
 s_1.open()
 current_listing_time = '2017-06-13T20:00:17-07:00' # starttime
