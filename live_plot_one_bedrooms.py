@@ -45,7 +45,8 @@ def another_one(time):
         record = c.fetchone()
         c.close()
     except:
-        record = None    
+        record = None
+    return record    
 
 s_1.open()
 current_listing_time = '2017-06-13T20:00:17-07:00' # starttime
