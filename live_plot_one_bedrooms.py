@@ -64,19 +64,28 @@ while True:
         area = listing[8]
         neighbourhood =listing[9]
         #x = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        if area != None and price!= None and neighbourhood!= None:
-            hover_text = "$" + str(price) + ", " + str(area) + "sqft, " + neighbourhood
-        elif price!= None and neighbourhood!= None:
-            hover_text = "$" + str(price) + ", "+ neighbourhood
-        elif neighbourhood!= None:
-            hover_text = neighbourhood
-        else:
+        try:
+            if area != None and price!= None and neighbourhood!= None:
+                hover_text = "$" + str(price) + ", " + str(area) + "sqft, " + neighbourhood
+            elif price!= None and neighbourhood!= None:
+                hover_text = "$" + str(price) + ", "+ neighbourhood
+            elif neighbourhood!= None:
+                hover_text = neighbourhood
+            else:
+                hover_text = ""
+        except:
             hover_text = ""
-
         print(hover_text)
-        x = datetime.datetime.strptime(current_listing_time[0:19], '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
-        y = price
-        if price < 3500 and price > 500 and in_vancouver(neighbourhood): # outliers
-            s_1.write(dict(x=x,y=y,text=hover_text))
+        try:
+            x = datetime.datetime.strptime(current_listing_time[0:19], '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+            y = price
+            if price < 3500 and price > 500 and in_vancouver(neighbourhood): # outliers
+                s_1.write(dict(x=x,y=y,text=hover_text))
+                time.sleep(time_between_points)
+            else:
+                s_1.heartbeat()
+                time.sleep(time_between_points)
+        except:
+            s_1.heartbeat()
             time.sleep(time_between_points)
 s_1.close()
