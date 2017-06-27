@@ -13,16 +13,14 @@ import matplotlib.path as mplPath
 stream_tokens = tls.get_credentials_file()['stream_ids']
 token_1 = stream_tokens[-1]   # I'm getting my stream tokens from the end to ensure I'm not reusing tokens
 
-stream_id1 = dict(token=token_1, maxpoints=30)
+stream_id1 = dict(token=token_1, maxpoints=60)
 
 trace1 = go.Scatter(x=[], y=[],text=[],hoverinfo ="text",stream=stream_id1, name='1bed',mode = 'lines+markers')
 
 data = [trace1]
 layout = go.Layout(
     title='1 Bedroom Apartments for rent in Vancouver',
-    yaxis=dict(
-        title='Monthly Rent ($)'
-    )
+    yaxis=dict(title='Monthly Rent ($)', range=[0, 3500])
 )
 
 fig = go.Figure(data=data, layout=layout)
@@ -41,7 +39,7 @@ def another_one(time):
     try:
         conn = sqlite3.connect('apartments.db')
         c = conn.cursor()
-        c.execute('SELECT * FROM apartments WHERE strftime("%s", date) > strftime("%s", ?) AND bedrooms = 1', (time,))
+        c.execute('SELECT * FROM apartments WHERE strftime("%s", date) > strftime("%s", ?) AND bedrooms = 1 AND longitude < -123.0234968 AND latitude > 49.1988668', (time,))
         record = c.fetchone()
         c.close()
     except:
@@ -49,8 +47,8 @@ def another_one(time):
     return record    
 
 s_1.open()
-current_listing_time = '2017-06-13T20:00:17-07:00' # starttime
-time_between_points = 45
+current_listing_time = '2017-06-20T20:00:17-07:00' # starttime
+time_between_points = 1
 
 while True:
     listing = another_one(current_listing_time)
@@ -79,7 +77,7 @@ while True:
         try:
             x = datetime.datetime.strptime(current_listing_time[0:19], '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
             y = price
-            if price < 3500 and price > 500 and in_vancouver(neighbourhood): # outliers
+            if price < 3500 and price > 500: # outliers
                 s_1.write(dict(x=x,y=y,text=hover_text))
                 time.sleep(time_between_points)
             else:
