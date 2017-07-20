@@ -122,13 +122,13 @@ def get_date_available(soup):
 def get_neighbourhood(latitude,longitude):
     # or, grab small from postig title text
     try:
-    neighbourhood = None
-    for k,v in hoods.items():
-        if mplPath.Path(v.as_matrix()).contains_point((longitude,latitude)): # for some reason, files are long,lat
-            neighbourhood = k
-            break
-        if neighbourhood == None:
-            neighbourhood = re.sub('[()]', '', soup.select('.postingtitletext')[0].small.find(text=True, recursive=False).strip())
+        neighbourhood = None
+        for k,v in hoods.items():
+            if mplPath.Path(v.as_matrix()).contains_point((longitude,latitude)): # for some reason, files are long,lat
+                neighbourhood = k
+                break
+            if neighbourhood == None:
+                neighbourhood = re.sub('[()]', '', soup.select('.postingtitletext')[0].small.find(text=True, recursive=False).strip())
     except:
         neighbourhood = None
     return neighbourhood
