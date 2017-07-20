@@ -138,6 +138,59 @@ def get_neighbourhood(latitude,longitude):
         neighbourhood = None
     return neighbourhood
 
+def send_email(user, pwd, recipient, subject, body):
+    import smtplib
+
+    gmail_user = user
+    gmail_pwd = pwd
+    FROM = user
+    TO = recipient if type(recipient) is list else [recipient]
+    SUBJECT = subject
+    TEXT = body
+
+    # Prepare actual message
+    message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
+    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.ehlo()
+        server.starttls()
+        server.login(gmail_user, gmail_pwd)
+        server.sendmail(FROM, TO, message)
+        server.close()
+        print('successfully sent the mail')
+    except:
+        print("failed to send mail")
+        
+
+def allie_filter(listing):
+    # if a listing meets the requirements of the filter, send a notification
+    # we should also grab the photos in this case (to do)
+    # don't like this data structure at all, need something more robust, particularly as we plan to destruct extras into more useful fields
+    post_date = listing[0]
+    post_id  = listing[1]
+    title  = listing[2]
+    latitude  = listing[3]
+    longitude = listing[4]
+    address = listing[5]
+    date_available = listing[6]
+    price = listing[7]
+    area = listing[8]
+    neighbourhood = listing[9]
+    extras = listing[10]
+    bedrooms = listing[11]
+    if area == None:
+        area=0
+    if extras == None:
+        extras = "???"
+    
+    try:
+        if neighbourhood=='Gastown' or neighbourhood == 'Yaletown' or neighbourhood == 'Downtown' or neighbourhood == 'Mount Pleasant' or neighbourhood == 'Grandview-Woodland' and price < 2000 and date_available == "2017-09-01":
+            body = "Link: %s \n Address: %s \n Date Available: %s \n Price: %f \n Square Footage: %i \n Extra Info: %s" % (post_id,address,date_available,price,area,extras)
+            send_email(my_email,gmail_password,destination_email,title,body)
+    except:
+        print("failed to send mail")
+
 for entry in reversed(apts.entries):
     # Grab some in info from the entry
     post_date = entry.updated
@@ -169,6 +222,8 @@ for entry in reversed(apts.entries):
         date_available = get_date_available(soup)
         neighbourhood = get_neighbourhood(latitude,longitude)
         
+        listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms]
+        allie_filter(listing)
         c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms])
         conn.commit()
         print("Added entry %s to db" % post_id)
