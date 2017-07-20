@@ -117,7 +117,12 @@ def get_all_the_stuff(soup):
     return stuff
 
 def get_date_available(soup):
-    return None
+    try:
+        tag = soup.select(".housing_movein_now")[0]
+        date = tag.attrs['data-date']
+    except:
+        date = None
+    return date
 
 def get_neighbourhood(latitude,longitude):
     # or, grab small from postig title text
@@ -151,9 +156,9 @@ for entry in reversed(apts.entries):
         soup = BeautifulSoup(page.text, "html.parser")
         latitude,longitude = get_location(tree)
         
-        if latitude == None or longitude == None:
-            print("No lat-long, moving to next entry")
-            continue
+        #if latitude == None or longitude == None:
+        #    print("No lat-long, moving to next entry")
+        #    continue
         
         address = get_address(soup)
         price = get_price(soup)
