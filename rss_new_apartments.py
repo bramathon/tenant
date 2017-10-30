@@ -190,7 +190,61 @@ def allie_filter(listing):
             send_email(my_email,gmail_password,destination_email,title,body)
     except:
         print("failed to send mail")
-
+        
+def extra_processor (extras):
+    unit_type= None
+    parking= None
+    smoking= None
+    pets= None
+    laundry = None
+    furnished = False
+    try:
+        details = extras.split(',')
+        # Unit
+        if 'apartment' in details:
+            unit_type = 'apartment'
+        if 'house' in details:
+            unit_type = 'house'
+        if 'townhouse' in details:
+            unit_type = 'townhouse'
+        if 'condo' in details:
+            unit_type = 'condo'
+        if 'furnished' in details:
+            furnished = True
+        
+        # Parking
+        if 'attached garage' in details:
+            parking = 'garage'
+        if 'detached garage' in details:
+            parking = 'garage'
+        if 'street parking' in details:
+            parking = 'street parking'
+        if 'off-street parking' in details:
+            parking= 'off-street parking'
+        if 'carport' in details:
+            parking = 'carport'
+            
+        # Smoking
+        if 'no smoking' in details:
+            smoking = False
+            
+        # Pets
+        if 'cats are OK - purrr' in details:
+            pets = 'cats'
+        if 'dogs are OK - wooof' in details:
+            pets = 'cats'
+            
+        # Laundry
+        if 'laundry in bldg' in details:
+            laundry = 'building'
+        if 'laundry on site' in details:
+            laundry = 'building'
+        if 'w/d in unit' in details:
+            laundry = 'unit'
+    except:
+        None
+    return [unit_type, parking, smoking, pets, laundry, furnished]
+    
 for entry in reversed(apts.entries):
     # Grab some in info from the entry
     post_date = entry.updated
@@ -219,12 +273,13 @@ for entry in reversed(apts.entries):
         bedrooms = get_bedrooms(soup)
         bathrooms = get_bathrooms(soup)
         extras = get_all_the_stuff(soup)
+        unit_type, parking, smoking, pets, laundry, furnished = extra_processor(extras)
         date_available = get_date_available(soup)
         neighbourhood = get_neighbourhood(latitude,longitude)
         
         listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms]
         allie_filter(listing)
-        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms])
+        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms, unit_type, parking, smoking, pets, laundry,furnished])
         conn.commit()
         print("Added entry %s to db" % post_id)
     time.sleep(5)
