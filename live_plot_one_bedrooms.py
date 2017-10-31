@@ -48,7 +48,7 @@ def another_one(time):
 
 s_1.open()
 current_listing_time = '2017-06-20T20:00:17-07:00' # starttime
-time_between_points = 1
+time_between_points = 45
 
 while True:
     listing = another_one(current_listing_time)
