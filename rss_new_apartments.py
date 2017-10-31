@@ -18,7 +18,6 @@ import re, requests
 from neighbourhoods import hoods
 import pandas as pd
 import matplotlib.path as mplPath
-from keys import gmail_password, my_email, destination_email
 
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
 url = "http://vancouver.craigslist.ca/search/apa?format=rss"
@@ -34,7 +33,11 @@ def get_title(soup):
     return title.find(text=True, recursive=False).strip()
 
 def get_bedrooms(soup):
-    soup.select('.housing')[0]
+    try:
+        bedrooms = soup.select('.housing')[0]
+    except:
+        bedrooms = None
+    return bedrooms
     
 def get_price(soup):
     try:
@@ -186,7 +189,7 @@ def allie_filter(listing):
         extras = "???"
     
     try:
-        if (neighbourhood=='Gastown' or neighbourhood == 'Yaletown' or neighbourhood == 'Downtown' or neighbourhood == 'Mount Pleasant' or neighbourhood == 'Grandview-Woodland' or neighbourhood == 'West End' or neighbourhood == 'Strathcona') and price < 2000 and date_available == "2017-09-01":
+        if neighbourhood=='Gastown' or neighbourhood == 'Yaletown' or neighbourhood == 'Downtown' or neighbourhood == 'Mount Pleasant' or neighbourhood == 'Grandview-Woodland' and price < 2000 and date_available == "2017-09-01":
             body = "Link: %s \n Address: %s \n Date Available: %s \n Price: %f \n Square Footage: %i \n Extra Info: %s" % (post_id,address,date_available,price,area,extras)
             send_email(my_email,gmail_password,destination_email,title,body)
     except:
@@ -279,6 +282,7 @@ for entry in reversed(apts.entries):
         neighbourhood = get_neighbourhood(latitude,longitude)
         
         listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms]
+        allie_filter(listing)
         c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms, unit_type, parking, smoking, pets, laundry,furnished])
         conn.commit()
         print("Added entry %s to db" % post_id)
