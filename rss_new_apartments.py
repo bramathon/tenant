@@ -237,6 +237,8 @@ def extra_processor (extras):
             pets = 'cats'
         if 'dogs are OK - wooof' in details:
             pets = 'cats'
+        if ('dogs are OK - wooof' in details) and ('cats are OK - purrr' in details):
+            pets = 'dogs+cats'
             
         # Laundry
         if 'laundry in bldg' in details:
