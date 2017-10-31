@@ -288,6 +288,7 @@ for entry in reversed(apts.entries):
         c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,extras,bedrooms,bathrooms, unit_type, parking, smoking, pets, laundry,furnished])
         conn.commit()
         print("Added entry %s to db" % post_id)
-    time.sleep(5)
+        time.sleep(5)
+    
 
 c.close()
