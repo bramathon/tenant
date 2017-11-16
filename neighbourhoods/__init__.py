@@ -25,3 +25,5 @@ hoods = {
     "Victoria-Fraserview": pd.read_csv("neighbourhoods/victoria_fraserview.csv"),
     "West End": pd.read_csv("neighbourhoods/west_end.csv"),
     "West Point Grey": pd.read_csv("neighbourhoods/west_point_grey.csv")}
+
+cities = {"Vancouver": pd.read_csv("neighbourhoods/vancouver.csv")}
