@@ -22,7 +22,7 @@ import matplotlib.path as mplPath
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
 url = "http://vancouver.craigslist.ca/search/apa?format=rss"
 apts = feedparser.parse( url )
-conn = sqlite3.connect('/home/bram/Documents/craiglist_crawler/apartments_new.db')
+conn = sqlite3.connect('/home/bram/Documents/craiglist_crawler/apartments.db')
 c = conn.cursor()
 
 def parse_int(string):
