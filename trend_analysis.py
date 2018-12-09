@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Trend analysis notebook
-# 
+#
 # This notebook produces the monhtly trend plots for the Vancouver rental market. Including:
 # 1. Median Rent for Vancouver and GVRD (back to Feb 2016)
 # 2. Median Rent per square foot for Vancouver and GVRD
@@ -11,7 +11,7 @@
 # 5. Composition of Unit Types
 # 6. Composition of Furnished
 # 7. Composition of City
-# 
+#
 # ## To Do
 # * Composition by neighbourhood
 # * Generate markdown report
@@ -30,6 +30,7 @@ import calendar
 import datetime
 import math
 import os
+import sys
 
 from plotly import __version__
 import plotly.plotly as py
@@ -52,6 +53,11 @@ if not os.path.exists(data_dir):
     os.mkdir(data_dir)
 
 
+if os.path.exists(sys.argv[1]):
+    blog_dir = sys.argv[1]
+else:
+    blog_dir = data_dir
+
 # In[ ]:
 
 
@@ -64,13 +70,13 @@ gvrd_months, gvrd_med_price, gvrd_unc = median_price_trend(months,)
 van_months, van_med_price, van_unc = median_price_trend(months,city='Vancouver')
 
 # Plotting
-data = [Scatter(x=van_months, 
+data = [Scatter(x=van_months,
                 y=van_med_price,
                 name="Vancouver",
                 error_y=dict(type='data',
                              array=van_unc,
                              visible=True)),
-        Scatter(x=gvrd_months, 
+        Scatter(x=gvrd_months,
                 y=gvrd_med_price,
                 name="GVRD",
                 error_y=dict(type='data',
@@ -82,7 +88,7 @@ layout = Layout(dict(title = 'Median Rent for Apartments',
                      yaxis = dict(title = 'Median Price ($)'),))
 fig = dict(data=data,layout=layout)
 median_rent_trend = data_dir + "median_rent.html"
-plot(fig,filename=median_rent_trend,include_plotlyjs=False,show_link=False)
+plot(fig,filename=median_rent_trend,include_plotlyjs=False,show_link=False,auto_open=False)
 
 
 # In[ ]:
@@ -96,13 +102,13 @@ gvrd_months, gvrd_med_price, gvrd_unc = monthly_trend(months,metric=median_rent_
 van_months, van_med_price, van_unc = monthly_trend(months,metric=median_rent_psf,select=lambda df: df.loc[df['City'] == 'Vancouver'])
 
 # Plotting
-data = [Scatter(x=van_months, 
+data = [Scatter(x=van_months,
                 y=van_med_price,
                 name="Vancouver",
                 error_y=dict(type='data',
                              array=van_unc,
                              visible=True)),
-        Scatter(x=gvrd_months, 
+        Scatter(x=gvrd_months,
                 y=gvrd_med_price,
                 name="GVRD",
                 error_y=dict(type='data',
@@ -114,7 +120,7 @@ layout = Layout(dict(title = 'Median Rent for Apartments',
                      yaxis = dict(title = 'Median Price ($)'),))
 fig = dict(data=data,layout=layout)
 median_rent_psf_trend = data_dir + "median_rent_psf.html"
-plot(fig,filename=median_rent_psf_trend,include_plotlyjs=False,show_link=False)
+plot(fig,filename=median_rent_psf_trend,include_plotlyjs=False,show_link=False,auto_open=False)
 
 
 # In[ ]:
@@ -142,7 +148,7 @@ layout = Layout(dict(title = 'Median Rent for an apartment by number of bedrooms
                      yaxis = dict(title = 'Median Price ($)'),))
 fig = dict(data=data,layout=layout)
 median_rent_trend_by_bedrooms = data_dir + "median_rent_by_bed.html"
-plot(fig,filename=median_rent_trend_by_bedrooms,include_plotlyjs=False,show_link=False)
+plot(fig,filename=median_rent_trend_by_bedrooms,include_plotlyjs=False,show_link=False,auto_open=False)
 
 
 # In[ ]:
@@ -170,7 +176,7 @@ layout = Layout(dict(title = 'Median Rent per square foot for an apartment by nu
                      yaxis = dict(title = 'Median Price ($)'),))
 fig = dict(data=data,layout=layout)
 median_rent_psf_trend_by_bedrooms = data_dir + "median_rent_psf_by_bed.html"
-plot(fig,filename=median_rent_psf_trend_by_bedrooms,include_plotlyjs=False,show_link=False)
+plot(fig,filename=median_rent_psf_trend_by_bedrooms,include_plotlyjs=False,show_link=False,auto_open=False)
 
 
 # In[ ]:
@@ -204,7 +210,7 @@ layout = Layout(dict(title = 'Proportion of listings by number of bedrooms (Vanc
                                  range= [0,1]),))
 fig = dict(data=data,layout=layout)
 bedroom_composition_trend = data_dir + "bedroom_composition.html"
-plot(fig,filename=bedroom_composition_trend,include_plotlyjs=False,show_link=False)
+plot(fig,filename=bedroom_composition_trend,include_plotlyjs=False,show_link=False,auto_open=False)
 
 
 # In[ ]:
@@ -238,7 +244,7 @@ layout = Layout(dict(title = 'Proportion of listings by unit type (Vancouver)',
                                  range= [0,1]),))
 fig = dict(data=data,layout=layout)
 unit_type_composition_trend = data_dir + "unit_type_composition.html"
-plot(fig,filename=unit_type_composition_trend,include_plotlyjs=False,show_link=False)
+plot(fig,filename=unit_type_composition_trend,include_plotlyjs=False,show_link=False,auto_open=False)
 
 
 # In[ ]:
@@ -282,7 +288,7 @@ layout = Layout(dict(title = 'Proportion of furnished listings (Vancouver)',
                                  range= [0,1]),))
 fig = dict(data=data,layout=layout)
 furnished_composition_trend = data_dir + "furnished_composition.html"
-plot(fig,filename=furnished_composition_trend,include_plotlyjs=False,show_link=False)
+plot(fig,filename=furnished_composition_trend,include_plotlyjs=False,show_link=False,auto_open=False)
 
 
 # In[ ]:
@@ -312,7 +318,7 @@ for city in cities:
     for m,total in zip(all_month_nums,num_listings_total):
         if m in month_nums:
             y.append(num_listings[month_nums.index(m)]/total)
-        
+
     trace = dict(x = month_nums,
                  y=y,
                  name = city,
@@ -327,7 +333,7 @@ layout = Layout(dict(title = 'Proportion of listings by city',
                                  range= [0,1]),))
 fig = dict(data=data,layout=layout)
 city_composition_trend = data_dir + "city_composition.html"
-plot(fig,filename=city_composition_trend,include_plotlyjs=False,show_link=False)
+plot(fig,filename=city_composition_trend,include_plotlyjs=False,show_link=False,auto_open=False)
 
 
 # In[ ]:
@@ -342,20 +348,37 @@ def insert_plot(plot_file,output_file):
     plot_html = open(plot_file,'r')
     plot_div = plot_html.read()
     plot_html.close()
-    
+
     plot_div = plot_div.replace("<html><head><meta charset=\"utf-8\" /></head><body>",'')
     plot_div = plot_div.replace("</body></html>",'')
-    
+
     print("<div>",file=output_file)
     print(plot_div,file=output_file)
     print("</div>",file=output_file)
     print("",file=output_file)
-    
-f = open(data_dir+"monthly_trends.md", "w")
+
+month_names = {1: 'January',
+               2: 'February',
+               3: 'March',
+               4: 'April',
+               5: 'May',
+               6: 'June',
+               7: 'July',
+               8: 'August',
+               9: 'September',
+               10: 'October',
+               11: 'November',
+               12: 'December'
+              }
+month_name = month_names[int(months[-1][5:7])]
+year = months[-1][0:4]
+
+report_file = blog_dir+"{}-{}_trends.md".format(month_name,year)
+f = open(report_file, "w")
 
 print("---",file=f)
 
-print("title: Trends for {}".format(months[-1]),file=f)
+print("title: Vancouver Rental Trends {}".format(month_name + ', ' + year),file=f)
 print("date: {}".format(str(datetime.date.today())),file=f)
 print("draft: False",file=f)
 print("---",file=f)
@@ -413,4 +436,3 @@ print("",file=f)
 insert_plot(city_composition_trend,f)
 
 print("Complete.")
-

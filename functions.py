@@ -23,7 +23,7 @@ def find_similar_listings(latitude,longitude,area):
     # units at exact address should be given priority
 #    print('Locating apartments within about')
 #    print(distance.distance((latitude,longitude),(latitude+0.0025,longitude))) # 0.0025 should be replaced by some statistical measure
-    conn = sqlite3.connect('/home/bram/Documents/craiglist_crawler/apartments.db')
+    conn = sqlite3.connect('apartments.db')
     c = conn.cursor()
     c.execute('SELECT * FROM apartments WHERE latitude < ? AND latitude > ? AND longitude < ? AND longitude > ?', (latitude + 0.0025,latitude-0.025,longitude+0.0025,longitude-0.0025))
     costs = []

@@ -22,7 +22,7 @@ import matplotlib.path as mplPath
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
 url = "http://vancouver.craigslist.ca/search/apa?format=rss"
 apts = feedparser.parse( url )
-conn = sqlite3.connect('/home/bram/Documents/craiglist_crawler/apartments.db')
+conn = sqlite3.connect('apartments.db')
 c = conn.cursor()
 
 def parse_int(string):
@@ -160,30 +160,6 @@ def get_city(latitude,longitude):
     except:
         selected_city = None
     return selected_city
-
-def send_email(user, pwd, recipient, subject, body):
-    import smtplib
-
-    gmail_user = user
-    gmail_pwd = pwd
-    FROM = user
-    TO = recipient if type(recipient) is list else [recipient]
-    SUBJECT = subject
-    TEXT = body
-
-    # Prepare actual message
-    message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
-    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
-    try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.ehlo()
-        server.starttls()
-        server.login(gmail_user, gmail_pwd)
-        server.sendmail(FROM, TO, message)
-        server.close()
-        print('successfully sent the mail')
-    except:
-        print("failed to send mail")
         
 def extra_processor (extras):
     unit_type= None
