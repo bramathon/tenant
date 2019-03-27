@@ -2,3 +2,6 @@ apartments.db
 .ipynb_checkpoints/
 __pycache__/
 db-backups
+keys.py
+nohup.out
+new_apts.log

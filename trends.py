@@ -26,13 +26,19 @@ def generate_months(startdate=datetime.date(2017,1,1),enddate=datetime.date.toda
         month = month + 1
     return months
 
+cache = {}
+
 def get_all_listing_for_month(month):
     # unfurnished listings filtered for outliers in price
-    conn = sqlite3.connect('apartments.db')
-    c = conn.cursor()
-    sql = "SELECT * FROM apartments WHERE strftime(\"%Y-%m\", date) = '{}'".format(month)
-    df = pd.read_sql_query(sql,conn)
-    conn.close()
+    if month in cache:
+        df = cache[month]
+    else:
+        conn = sqlite3.connect('apartments.db')
+        c = conn.cursor()
+        sql = "SELECT * FROM apartments WHERE strftime(\"%Y-%m\", date) = '{}'".format(month)
+        df = pd.read_sql_query(sql,conn)
+        cache[month] = df
+        conn.close()
     return df
 
 ## Sanity Check
