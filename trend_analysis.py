@@ -22,7 +22,7 @@
 # 
 # > ```python trend_analysis.py "/home/bram/Documents/blog/content/post/" ```
 
-# In[ ]:
+# In[1]:
 
 
 import numpy as np
@@ -46,7 +46,7 @@ from params import blog_dir, this_month, output
 #init_notebook_mode()
 
 
-# In[ ]:
+# In[2]:
 
 
 # Generate the data directory
@@ -60,7 +60,7 @@ from params import blog_dir, this_month, output
 #     os.mkdir(data_dir)
 
 
-# In[12]:
+# In[5]:
 
 
 # Global Parameters
@@ -68,10 +68,11 @@ from params import blog_dir, this_month, output
 today = datetime.date.today()
 
 if this_month == None:
-    this_month = str(datetime.date(today.year,today.month,1))[:7]
     months = generate_months()
+    this_month = months[-1]
 else:
     months = generate_months(enddate=datetime.date(int(this_month[:4]),int(this_month[5:7]),1))
+    this_month = months[-1]
 
 def is_interactive():
     import __main__ as main
@@ -84,8 +85,20 @@ else:
     notebook = False
 
 
-# In[11]:
+# In[20]:
 
+
+year = int(this_month[:4])
+mm = int(this_month[5:])
+
+# we analyze entire months at once, so we have to decide on a day. I've chosen the last day of that month
+def last_day_of_month(any_day):
+    next_month = any_day.replace(day=28) + datetime.timedelta(days=4)  # this will never fail
+    return next_month - datetime.timedelta(days=next_month.day)
+
+post_date = str(last_day_of_month(datetime.date(year,mm,1)))# if mm != 12 else str(datetime.date(year,1,1))
+
+print("Analyzing data up to {}".format(this_month))
 
 month_names = {1: 'January',
                2: 'February',
@@ -102,13 +115,13 @@ month_names = {1: 'January',
               }
 
 if output == True:
-    report_file = blog_dir+month_names[int(this_month[5:7])]+this_month[0:4]+"_trends.md"
+    report_file = blog_dir+month_names[int(this_month[5:7])]+ '-' + this_month[0:4]+"_trends.md"
     f = open(report_file, "w")
 
     print("---",file=f)
 
-    print("title: Vancouver Rental Trends {}".format(month_names[int(this_month[5:7])] + ', ' + this_month[0:4]),file=f)
-    print("date: {}".format(str(datetime.date.today())),file=f)
+    print("title: Vancouver Rental Trends - {}".format(month_names[int(this_month[5:7])] + ', ' + this_month[0:4]),file=f)
+    print("date: {}".format(post_date),file=f)
     print("draft: False",file=f)
     print("description: My Analysis of monthly trends in Vancouver's rental housing market",file=f)
     print("---",file=f)
@@ -149,7 +162,9 @@ layout = Layout(dict(title = 'Median Rent for Apartments',
 fig = dict(data=data,layout=layout)
 median_rent_trend = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 if output == True:
+    print("",file=f)
     print("## Median rent trend",file=f)
+    print("",file=f)
     print("This figure shows the median rent of all listings in Vancouver and the GVRD as long as far back as the data goes. It's the broadest possible statistic\n",file=f)
     print("",file=f)
     print(median_rent_trend,file=f)
@@ -189,7 +204,9 @@ fig = dict(data=data,layout=layout)
 median_rent_psf_trend = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 if output == True:
+    print("",file=f)
     print("## Median rent per square foot trend",file=f)
+    print("",file=f)
     print("This figure shows the median rent per square foot of all listings in Vancouver and the GVRD. If the median unit size is decreasing, it may appear that rents are falling. Examining rent per square foot can therefore be a more useful statistic to determine the direction of the rental market\n",file=f)
     print("",file=f)
     print(median_rent_psf_trend,file=f)
@@ -225,7 +242,9 @@ fig = dict(data=data,layout=layout)
 median_rent_trend_by_bedrooms = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 if output == True:
+    print("",file=f)
     print("## Median rent trend broken out by bedrooms",file=f)
+    print("",file=f)
     print("This figure shows the median rent of all listings, broken out by number of bedrooms, in Vancouver and the GVRD.\n",file=f)
     print("",file=f)
     print(median_rent_trend_by_bedrooms,file=f)
@@ -261,7 +280,9 @@ fig = dict(data=data,layout=layout)
 median_rent_psf_trend_by_bedrooms = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 if output == True:
+    print("",file=f)
     print("## Median rent per square foot trend broken out by bedrooms",file=f)
+    print("",file=f)
     print("This figure shows the median rent per square foot of all listings, broken out by number of bedrooms, in Vancouver and the GVRD.\n",file=f)
     print("",file=f)
     print(median_rent_psf_trend_by_bedrooms,file=f)
@@ -300,10 +321,12 @@ layout = Layout(dict(title = 'Proportion of listings by number of bedrooms (Vanc
                                  tickformat=',.0%',
                                  range= [0,1]),))
 fig = dict(data=data,layout=layout)
-bedroom_composition_trend = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False)
+bedroom_composition_trend = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 if output == True:
+    print("",file=f)
     print("## Bedrooms composition trend",file=f)
+    print("",file=f)
     print("This figure shows composition of bedrooms within Vancouver over time. This will indicate if the market is shifting towards homes with fewer bedrooms, as might be expected \n",file=f)
     print("",file=f)
     print(bedroom_composition_trend,file=f)
@@ -345,7 +368,9 @@ fig = dict(data=data,layout=layout)
 unit_type_composition_trend = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 if output == True:
+    print("",file=f)
     print("## Unit type composition trend",file=f)
+    print("",file=f)
     print("This figure shows composition of unit types within Vancouver over time. Craigslist specifies 4 unit types: houses, townhouses, apartments and condos. It's up to the poster to select one of these options and entirely subjective so trends will be difficult to interpret. One could speculator that apartments are more often purpose-built rental, while condos are strata units rented on the aftermarket. The extremely small share of townhouses is notable. Basement suites are also unclear, they could be under houses, or apartments.\n",file=f)
     print("",file=f)
     print(unit_type_composition_trend,file=f)
@@ -397,7 +422,9 @@ fig = dict(data=data,layout=layout)
 furnished_composition_trend = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 if output == True:
+    print("",file=f)
     print("## Furnished composition trend",file=f)
+    print("",file=f)
     print("This figure shows the composition of furnished vs unfurnished units in Vancouver. It also indicates the date which new regulations reuslted in the delisting of thousands of units from airbnb. We may expect to see an increase in furnished units as these airbnbs return to the long term rental market\n",file=f)
     print("",file=f)
     print(furnished_composition_trend,file=f)
@@ -450,7 +477,9 @@ fig = dict(data=data,layout=layout)
 city_composition_trend = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
     
 if output == True:
+    print("",file=f)
     print("## City composition trend",file=f)
+    print("",file=f)
     print("This figure shows the composition of listings in each municipal area. Vancouver clearly dominates the rental market, despite containing a relatively smaller fraction of the region's population\n",file=f)
     print("",file=f)
     print(city_composition_trend,file=f)

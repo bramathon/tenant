@@ -8,7 +8,7 @@
 # > python monthly_analysis.py "/home/bram/Documents/blog/content/post/" "2018-12"
 # 
 
-# In[2]:
+# In[47]:
 
 
 import numpy as np
@@ -16,7 +16,7 @@ import pandas as pd
 import sqlite3
 from analysis_functions import remove_price_outliers,remove_area_outliers,insert_plot
 import datetime
-from trends import get_all_listing_for_month
+from trends import get_all_listing_for_month,generate_months
 import os
 from tabulate import tabulate
 import colorlover as cl
@@ -36,13 +36,15 @@ from params import blog_dir, this_month, output
 from neighbourhoods import hoods, cities
 
 
-# In[3]:
+# In[49]:
 
 
 today = datetime.date.today()
+# autorun on the 1st of each month, analyze the previous month
 
 if this_month == None:
-    this_month = str(datetime.date(today.year,today.month,1))[:7]
+    # if no month specified, analyze previous month
+    this_month = generate_months()[-1]
 
 def is_interactive():
     import __main__ as main
@@ -55,13 +57,22 @@ else:
     notebook = False
 
 
-# In[4]:
+# In[59]:
 
 
 ## Mapping
 
 year = int(this_month[:4])
 mm = int(this_month[5:])
+
+# we analyze entire months at once, so we have to decide on a day. I've chosen the last day of that month
+def last_day_of_month(any_day):
+    next_month = any_day.replace(day=28) + datetime.timedelta(days=4)  # this will never fail
+    return next_month - datetime.timedelta(days=next_month.day)
+
+post_date = str(last_day_of_month(datetime.date(year,mm,1)))
+
+print("Analyzing data for {}".format(this_month))
 
 if mm == 1:
     last_month = str(datetime.date(year-1,12,1))[:7]
@@ -98,23 +109,24 @@ if output == True:
     f = open(report_file, "w")
 
     print("---",file=f)
-    print("title: Vancouver Monthly Rental Report {}".format(month_name + ', ' + year),file=f)
-    print("date: {}".format(str(datetime.date.today())),file=f)
+    print("title: Vancouver Monthly Rental Report - {}".format(month_name + ', ' + year),file=f)
+    print("date: {}".format(post_date),file=f)
     print("draft: False",file=f)
     print("description: Monthly rental housing report for {}".format(month_name + ', ' + year),file=f)
-    print("featuredImage: \"/img/{}.jpg\"".format(this_month),file=f)
+    #print("featuredImage: \"/img/{}.jpg\"".format(this_month),file=f)
     print("---",file=f)
 
     print("",file=f)
     print("This post shows the monthly breakdown for Vancouver rents in {}".format(month_name),file=f)
-
+    
+    print("",file=f)
     print("<div>",file=f)
     print("<script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>",file=f)
     print("</div>",file=f)
     print("",file=f)
 
 
-# In[5]:
+# In[36]:
 
 
 def get_all_listing_for_month(month):
@@ -127,7 +139,7 @@ def get_all_listing_for_month(month):
     return df
 
 
-# In[6]:
+# In[37]:
 
 
 prev_data = get_all_listing_for_month(last_month)
@@ -147,7 +159,7 @@ raw_data = get_all_listing_for_month(this_month)
 # 6. Maps
 # 
 
-# In[7]:
+# In[38]:
 
 
 # Median Rent
@@ -190,7 +202,9 @@ if output:
 
 ## Report
 if output:
+    print("",file=f)
     print("## Overall average rent",file=f)
+    print("",file=f)
     print("This figure shows the distribution of rents across all metro Vancouver craigslist listings",file=f)
     print("",file=f)
 
@@ -198,10 +212,11 @@ if output:
                     ['Last Month',prev_median_price,prev_mean_price,""]],
                headers=[' ','Median Rent','Mean Rent','% Change'],
                tablefmt='pipe'),file=f)
+    print("",file=f)
     print(rent_dist,file=f)
 
 
-# In[8]:
+# In[39]:
 
 
 price_psf_data = remove_area_outliers(remove_price_outliers(raw_data))
@@ -225,17 +240,20 @@ if output:
 ## Report
 
 if output:
+    print("",file=f)
     print("## Rent by unit type",file=f)
+    print("",file=f)
     print("This figure shows the distribution of rents for each unit type. I've normalized each histogram to emphasize the price distirbution of different unit types",file=f)
     print("",file=f)
     print(tabulate([['Median Price:',utype_medians['condo'],utype_medians['apartment'],
                      utype_medians['townhouse'],utype_medians['house']]],
                    headers=[' ','Condo','Apartment','House','Townhouse'],
                    tablefmt='pipe'),file=f)
+    print("",file=f)
     print(rent_dist_utype,file=f)
 
 
-# In[9]:
+# In[40]:
 
 
 price_psf_data = remove_area_outliers(remove_price_outliers(raw_data))
@@ -258,19 +276,21 @@ if output:
     
 ## Report
 if output:
+    print("",file=f)
     print("## Rent per square foot by unit type",file=f)
+    print("",file=f)
     print("This figure shows the distribution of rent per square for each unit type. I've normalized each histogram to emphasize the price distirbution of different unit types. It's also worth noting that larger units typically have a lower rent per square foot, so this may reflect a difference in size more than quality",file=f)
     print("",file=f)
     print(tabulate([['Median Price:',utype_psf_medians['condo'],utype_psf_medians['apartment'],
                      utype_psf_medians['townhouse'],utype_psf_medians['house']]],
                    headers=[' ','Condo','Apartment','House','Townhouse'],
                    tablefmt='pipe'),file=f)
-
+    print("",file=f)
     print(rent_psf_dist_utype,file=f)
-    print(".",file=f)
+    print("",file=f)
 
 
-# In[10]:
+# In[41]:
 
 
 # rent by unit-type non normalized distruibution
@@ -290,7 +310,7 @@ if output:
     rent_dist_utype_breakdown = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 
-# In[11]:
+# In[42]:
 
 
 # per square foot non normalized distribution
@@ -311,7 +331,7 @@ if output:
     rent_psf_dist_utype_breakdown = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 
-# In[12]:
+# In[43]:
 
 
 # Mapping
@@ -324,7 +344,7 @@ def unit_description(row):
         return "${}".format(row['price'])
 
 
-# In[13]:
+# In[44]:
 
 
 price_data = remove_price_outliers(raw_data)
@@ -358,14 +378,16 @@ if output:
     
 ## Report
 if output:
+    print("",file=f)
     print("## Map of all listings, showing rent",file=f)
+    print("",file=f)
     print("This map shows all the listings for the month, coloured by the price",file=f)
     print("",file=f)
     print(rent_map,file=f)
-    print(".",file=f)
+    print("",file=f)
 
 
-# In[14]:
+# In[45]:
 
 
 price_psf_data = remove_area_outliers(remove_price_outliers(raw_data))
@@ -401,14 +423,16 @@ if output:
     
 ## Report, 
 if output:
+    print("",file=f)
     print("## Map of all listings, showing rent per square foot",file=f)
+    print("",file=f)
     print("This map shows all the listings for the month, coloured by the price per square foot",file=f)
     print("",file=f)
     print(rent_psf_map,file=f)
-    print(".",file=f)
+    print("",file=f)
 
 
-# In[15]:
+# In[46]:
 
 
 price_psf_data = remove_area_outliers(remove_price_outliers(raw_data))
@@ -447,10 +471,13 @@ if output:
     
 ## Report, 
 if output:
+    print("",file=f)
     print("## Map of all listings, showing rent per square foot",file=f)
+    print("",file=f)
     print("This map shows all the listings for the month, coloured by the price per square foot",file=f)
     print("",file=f)
     print(unit_type_map,file=f)
+    print("",file=f)
     print(".",file=f)
 
 

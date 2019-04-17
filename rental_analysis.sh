@@ -2,8 +2,12 @@
 # run the rental analysis and upload to blog
 cd /home/bram/Documents/craiglist_crawler/
 
+# to update the scripts:
+# jupyter nbconvert --to script trend_analysis.ipynb
+# jupyter nbconvert --to script monthly_analysis.ipynb
+
 echo "blog_dir = '/home/bram/Documents/blog/content/post/'" > params.py
-echo "this_month = None" >> params.py
+echo "this_month = '2019-01'" >> params.py
 echo "output = True" >> params.py
 
 /home/bram/anaconda3/bin/python /home/bram/Documents/craiglist_crawler/trend_analysis.py 
@@ -18,7 +22,6 @@ echo "output = True" >> params.py
 
 # DIR=/var/www/headacheswithpictures   # might sometimes be empty!
 
-# hugo #&& rsync -avz --delete public/ ${USER}@${HOST}:${DIR}
 cd /home/bram/Documents/blog
 hugo
 gcloud compute scp --project "bram-185008" --zone "us-west1-b" --recurse /home/bram/Documents/blog/public/ my-box:/usr/share/nginx/headacheswithpictures/
