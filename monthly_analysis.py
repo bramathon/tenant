@@ -8,7 +8,7 @@
 # > python monthly_analysis.py "/home/bram/Documents/blog/content/post/" "2018-12"
 # 
 
-# In[47]:
+# In[ ]:
 
 
 import numpy as np
@@ -36,7 +36,7 @@ from params import blog_dir, this_month, output
 from neighbourhoods import hoods, cities
 
 
-# In[49]:
+# In[ ]:
 
 
 today = datetime.date.today()
@@ -57,7 +57,7 @@ else:
     notebook = False
 
 
-# In[59]:
+# In[ ]:
 
 
 ## Mapping
@@ -109,15 +109,21 @@ if output == True:
     f = open(report_file, "w")
 
     print("---",file=f)
-    print("title: Vancouver Monthly Rental Report - {}".format(month_name + ', ' + year),file=f)
+    print("title: {} Report".format(month_name + ', ' + year),file=f)
     print("date: {}".format(post_date),file=f)
     print("draft: False",file=f)
+    print("writer: 'Bram'",file=f)
+    print("showonlyimage: true",file=f)
+    print("image: 'img/{}.jpg'".format(this_month),file=f)
     print("description: Monthly rental housing report for {}".format(month_name + ', ' + year),file=f)
     #print("featuredImage: \"/img/{}.jpg\"".format(this_month),file=f)
     print("---",file=f)
 
     print("",file=f)
     print("This post shows the monthly breakdown for Vancouver rents in {}".format(month_name),file=f)
+
+    print("",file=f)
+    print("<!--more-->",file=f)
     
     print("",file=f)
     print("<div>",file=f)
@@ -126,7 +132,7 @@ if output == True:
     print("",file=f)
 
 
-# In[36]:
+# In[ ]:
 
 
 def get_all_listing_for_month(month):
@@ -139,7 +145,7 @@ def get_all_listing_for_month(month):
     return df
 
 
-# In[37]:
+# In[ ]:
 
 
 prev_data = get_all_listing_for_month(last_month)
@@ -159,7 +165,7 @@ raw_data = get_all_listing_for_month(this_month)
 # 6. Maps
 # 
 
-# In[38]:
+# In[ ]:
 
 
 # Median Rent
@@ -208,15 +214,15 @@ if output:
     print("This figure shows the distribution of rents across all metro Vancouver craigslist listings",file=f)
     print("",file=f)
 
-    print(tabulate([['This Month',median_price, mean_price,round(100*(mean_price-prev_mean_price)/prev_mean_price,1)],
-                    ['Last Month',prev_median_price,prev_mean_price,""]],
+    print(tabulate([['This Month','$' + str(median_price), '$' + str(mean_price),round(100*(mean_price-prev_mean_price)/prev_mean_price,1)],
+                    ['Last Month','$' + str(prev_median_price),'$' + str(prev_mean_price),""]],
                headers=[' ','Median Rent','Mean Rent','% Change'],
                tablefmt='pipe'),file=f)
     print("",file=f)
     print(rent_dist,file=f)
 
 
-# In[39]:
+# In[ ]:
 
 
 price_psf_data = remove_area_outliers(remove_price_outliers(raw_data))
@@ -253,7 +259,7 @@ if output:
     print(rent_dist_utype,file=f)
 
 
-# In[40]:
+# In[ ]:
 
 
 price_psf_data = remove_area_outliers(remove_price_outliers(raw_data))
@@ -290,7 +296,7 @@ if output:
     print("",file=f)
 
 
-# In[41]:
+# In[ ]:
 
 
 # rent by unit-type non normalized distruibution
@@ -310,7 +316,7 @@ if output:
     rent_dist_utype_breakdown = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 
-# In[42]:
+# In[ ]:
 
 
 # per square foot non normalized distribution
@@ -326,12 +332,12 @@ layout=Layout(dict(title='Rent per square foot for {}, {}, broken out by unit ty
                    yaxis = dict(title = 'Number of Listings')))
 fig=dict(data=price_hist,layout=layout)
 if notebook:
-    iplot(fig)
+    plot(fig)
 if output:
     rent_psf_dist_utype_breakdown = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
 
 
-# In[43]:
+# In[ ]:
 
 
 # Mapping
@@ -344,7 +350,7 @@ def unit_description(row):
         return "${}".format(row['price'])
 
 
-# In[44]:
+# In[ ]:
 
 
 price_data = remove_price_outliers(raw_data)
@@ -372,7 +378,7 @@ layout = Layout(
 fig = dict(data=plots,layout=layout)
 
 if notebook:
-    iplot(fig)
+    plot(fig)
 if output:
     rent_map = plot(fig,include_plotlyjs=False,show_link=False,auto_open=False,output_type='div')
     
@@ -387,7 +393,7 @@ if output:
     print("",file=f)
 
 
-# In[45]:
+# In[ ]:
 
 
 price_psf_data = remove_area_outliers(remove_price_outliers(raw_data))
@@ -432,7 +438,7 @@ if output:
     print("",file=f)
 
 
-# In[46]:
+# In[ ]:
 
 
 price_psf_data = remove_area_outliers(remove_price_outliers(raw_data))

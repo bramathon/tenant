@@ -18,12 +18,14 @@ def generate_months(startdate=datetime.date(2017,1,1),enddate=datetime.date.toda
     year = startdate.year
     months = []
     i = 0 
-    while (year < enddate.year) or (month <= enddate.month):
+    while (year < enddate.year) or (month < enddate.month):
         months.append(str(datetime.date(year,month,1))[:7])
         if (month % 12) == 0:
             year = year + 1
-            month = 0
-        month = month + 1
+            month = 1
+        else:
+            month = month + 1        
+    months.append(str(datetime.date(year,month,1))[:7])
     return months
 
 cache = {}

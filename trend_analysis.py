@@ -22,7 +22,7 @@
 # 
 # > ```python trend_analysis.py "/home/bram/Documents/blog/content/post/" ```
 
-# In[1]:
+# In[ ]:
 
 
 import numpy as np
@@ -46,7 +46,7 @@ from params import blog_dir, this_month, output
 #init_notebook_mode()
 
 
-# In[2]:
+# In[ ]:
 
 
 # Generate the data directory
@@ -60,7 +60,7 @@ from params import blog_dir, this_month, output
 #     os.mkdir(data_dir)
 
 
-# In[5]:
+# In[ ]:
 
 
 # Global Parameters
@@ -72,8 +72,7 @@ if this_month == None:
     this_month = months[-1]
 else:
     months = generate_months(enddate=datetime.date(int(this_month[:4]),int(this_month[5:7]),1))
-    this_month = months[-1]
-
+    
 def is_interactive():
     import __main__ as main
     return not hasattr(main, '__file__')
@@ -85,7 +84,7 @@ else:
     notebook = False
 
 
-# In[20]:
+# In[ ]:
 
 
 year = int(this_month[:4])
@@ -120,11 +119,20 @@ if output == True:
 
     print("---",file=f)
 
-    print("title: Vancouver Rental Trends - {}".format(month_names[int(this_month[5:7])] + ', ' + this_month[0:4]),file=f)
+    print("title: Rent Trends - {}".format(month_names[int(this_month[5:7])] + ', ' + this_month[0:4]),file=f)
     print("date: {}".format(post_date),file=f)
     print("draft: False",file=f)
+    print("writer: 'Bram'",file=f)
+    print("showonlyimage: true",file=f)
+    print("image: 'img/{}.jpg'".format(this_month),file=f)
     print("description: My Analysis of monthly trends in Vancouver's rental housing market",file=f)
     print("---",file=f)
+    
+    print("",file=f)
+    print("This post shows the trends in the Vancouver rental market. Series is from from June, 2017 to today",file=f)
+    
+    print("",file=f)
+    print("<!--more-->",file=f)
     
     print("<div>",file=f)
     print("<script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>",file=f)
