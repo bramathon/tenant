@@ -5,3 +5,4 @@ db-backups
 keys.py
 nohup.out
 new_apts.log
+params.py
