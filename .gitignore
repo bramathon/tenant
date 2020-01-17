@@ -1,4 +1,5 @@
 apartments.db
+vancouver.db
 .ipynb_checkpoints/
 __pycache__/
 db-backups
@@ -6,3 +7,5 @@ keys.py
 nohup.out
 new_apts.log
 params.py
+data/
+all_past_months_analysis.sh
