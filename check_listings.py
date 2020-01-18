@@ -14,11 +14,19 @@ import time
 import numpy as np
 from bs4 import BeautifulSoup
 import re, requests
-from neighbourhoods import hoods, cities
+from vancouver_neighbourhoods import hoods, cities
 import pandas as pd
+import sys
+from rss_feeds import cities, rss_feeds, database_files
 import matplotlib.path as mplPath
 
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
+
+city = sys.argv[1]
+
+# make sure this is a supported city
+assert city in cities
+
 url = "http://vancouver.craigslist.ca/search/apa?format=rss"
 apts = feedparser.parse( url )
 conn = sqlite3.connect('vancouver.db')
