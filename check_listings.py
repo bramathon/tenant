@@ -17,7 +17,7 @@ import re, requests
 from vancouver_neighbourhoods import hoods, cities
 import pandas as pd
 import sys
-from rss_feeds import cities, rss_feeds, database_files
+from rss_feeds import supported_cities, rss_feeds
 import matplotlib.path as mplPath
 
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
@@ -25,11 +25,11 @@ import matplotlib.path as mplPath
 city = sys.argv[1]
 
 # make sure this is a supported city
-assert city in cities
+assert city in supported_cities
 
-url = "http://vancouver.craigslist.ca/search/apa?format=rss"
+url = rss_feeds[city]
 apts = feedparser.parse( url )
-conn = sqlite3.connect('vancouver.db')
+conn = sqlite3.connect("listings.db")
 c = conn.cursor()
 
 def parse_int(string):
@@ -157,7 +157,7 @@ def get_location(soup):
         location = None
     return location
 
-def get_city(latitude,longitude):
+def get_muni(latitude,longitude):
     selected_city = None
     try:
         for city, coords in cities.items():
@@ -232,7 +232,8 @@ for entry in reversed(apts.entries):
     print(post_date)
     print(post_id)
     # check if the entry is already in the database
-    c.execute('SELECT * FROM apartments WHERE id = ? AND date = ?', [post_id,post_date])
+    sql = "SELECT * FROM {} WHERE id = ? AND date = ?".format(city)
+    c.execute(sql, [post_id,post_date])
     if c.fetchone():
         print("Already in db...")
     else:
@@ -256,10 +257,11 @@ for entry in reversed(apts.entries):
         date_available = get_date_available(soup)
         neighbourhood = get_neighbourhood(latitude,longitude)
         location = get_location(soup)
-        city = get_city(latitude,longitude)
+        muni = get_muni(latitude,longitude)
         
-        listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,location,extras,bedrooms,bathrooms,city]
-        c.execute('INSERT INTO apartments VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, city, location])
+        listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,location,extras,bedrooms,bathrooms,muni]
+        sql = "INSERT INTO {} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)".format(city)
+        c.execute(sql, [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location])
         conn.commit()
         print("Added entry %s to db" % post_id)
         time.sleep(5)
