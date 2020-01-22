@@ -1,5 +1,5 @@
-apartments.db
-vancouver.db
+listings.db
+db_backups/
 .ipynb_checkpoints/
 __pycache__/
 db-backups
