@@ -9,3 +9,5 @@ new_apts.log
 params.py
 data/
 all_past_months_analysis.sh
+modelling/vancouver_data_series.db
+vancouver_data_series.db
