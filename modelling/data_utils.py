@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pickle as pkl
 
 '''
@@ -45,6 +46,73 @@ def df_to_features_labels(dataframe):
     x = dataframe[feature_names]
     y = dataframe['price']
     return x, y
+
+
+def norm (series,method="var"):
+    """
+    Returns the (pandas) series, normalized by the selected method. 
+    - Method 'var' sets the centre at the median value and divides by the std.
+    - Method 'range' sets the centre at the median and the min->-1, max->1
+    Also returns a function that can be used to return the data to real units
+    """
+    assert isinstance(series,pd.Series), "data must be a Pandas series"
+    if method  == "var":
+        median = series.median()
+        std = series.std()
+        norm_series = (series - median)/std
+        to_real_units = lambda x: x*std + median
+    elif method == "range":
+        data_range = series.max() - series.min()
+        norm_series = (series - series.min())/(0.5*data_range) - 1
+        to_real_units = lambda x: (x+1)*0.5*data_range + series.min()
+    return norm_series, to_real_units
+    
+    
+
+def normalize_dataset (df,return_converters=False):
+    """
+    Converts the dataframe into a format useful for fitting models
+    - returns a dataframe
+    - return_converters will return a second value which is a dictionary of functions that can convert back to real units
+    """
+    assert all(col in df.columns.tolist() for col in  ['date', 'latitude','longitude','area','bedrooms','unit_type','pets','furnished','price'])
+    
+    norm_df = pd.DataFrame()
+    
+    norm_df['date'] = df['date'].astype(int)/1e9
+    norm_df['date'], convert_date = norm(norm_df['date'],method="range")
+    norm_df['latitude'], convert_lat = norm(df['latitude'])
+    norm_df['longitude'], convert_long = norm(df['longitude'])
+    norm_df['area'], convert_area = norm(df['area'])
+
+    # code the bedrooms as binary variables
+
+    norm_df['studio'] = (df['bedrooms']==0.0).astype(int)
+    norm_df['1_bed'] = (df['bedrooms']==1.0).astype(int)
+    norm_df['2_bed'] = (df['bedrooms']==2.0).astype(int)
+    norm_df['3_bed'] = (df['bedrooms']==3.0).astype(int)
+    norm_df['4_bed'] = (df['bedrooms']==4.0).astype(int)
+    norm_df['5_bed'] = (df['bedrooms']==5.0).astype(int)
+    norm_df['6_bed'] = (df['bedrooms']==6.0).astype(int)
+    norm_df['mansion'] = (df['bedrooms']>=7.0).astype(int)
+
+    # code the unit type as binary variables
+
+    norm_df['apartment'] = (df['unit_type']=="apartment").astype(int)
+    norm_df['condo'] = (df['unit_type']=="condo").astype(int)
+    norm_df['house'] = (df['unit_type']=="house").astype(int)
+    norm_df['townhouse'] = (df['unit_type']=="townhouse").astype(int)
+
+    norm_df['pets'] = df['pets']
+    norm_df['furnished'] = df['furnished']
+
+    norm_df['price'], convert_price = norm(df['price'])
+
+    conversion_functions = {'date': convert_date, 'latitude': convert_lat, 'longitude': convert_long, 'area': convert_area, 'price': convert_price}
+    if return_converters:
+        return norm_df, conversion_functions
+    else:
+        return norm_df
 
 
 
