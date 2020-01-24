@@ -2,10 +2,11 @@ import numpy as np
 import pandas as pd
 import pickle as pkl
 
-'''
-Splits a dataframe into train/val/test dataframes
-'''
+
 def train_val_test_split(dataframe, train_frac, val_frac=0):
+    '''
+    Splits a dataframe into train/val/test dataframes
+    '''
     test_frac = 1 - train_frac - val_frac
     assert test_frac > 0, 'Train fraction and val fraction cannot be >= 1'
     train_split = int(train_frac*len(dataframe))
@@ -60,11 +61,11 @@ def norm (series,method="var"):
         median = series.median()
         std = series.std()
         norm_series = (series - median)/std
-        to_real_units = lambda x: x*std + median
+        to_real_units = "lambda x: x*{} + {}".format(std,median)
     elif method == "range":
         data_range = series.max() - series.min()
         norm_series = (series - series.min())/(0.5*data_range) - 1
-        to_real_units = lambda x: (x+1)*0.5*data_range + series.min()
+        to_real_units = "lambda x: (x+1)*0.5*{} + {}".format(data_range,series.min())
     return norm_series, to_real_units
     
     
