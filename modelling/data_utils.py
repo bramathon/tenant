@@ -3,7 +3,6 @@ import pickle as pkl
 
 '''
 Splits a dataframe into train/val/test dataframes
-
 '''
 def train_val_test_split(dataframe, train_frac, val_frac=0):
     test_frac = 1 - train_frac - val_frac
@@ -22,7 +21,9 @@ def train_val_test_split(dataframe, train_frac, val_frac=0):
         return train, test
 
 
-
+'''
+Creates features and labels from a dataframe
+'''
 def df_to_features_labels(dataframe):
     feature_names = ['latitude',
                      'longitude',
@@ -44,9 +45,6 @@ def df_to_features_labels(dataframe):
     x = dataframe[feature_names]
     y = dataframe['price']
     return x, y
-
-#x = pkl.load(open('./modelling/clean_dataset.pickle', 'rb'))
-#x,y = df_to_features_labels(x)
 
 
 
