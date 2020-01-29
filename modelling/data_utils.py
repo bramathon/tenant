@@ -62,11 +62,13 @@ def norm (series,method="var"):
         std = series.std()
         norm_series = (series - median)/std
         to_real_units = "lambda x: x*{} + {}".format(std,median)
+        to_norm_units = "lambda x: (x-{})/{}".format(median,std)
     elif method == "range":
         data_range = series.max() - series.min()
         norm_series = (series - series.min())/(0.5*data_range) - 1
         to_real_units = "lambda x: (x+1)*0.5*{} + {}".format(data_range,series.min())
-    return norm_series, to_real_units
+        to_norm_units = "lambda x: (x - {})/(0.5*{})".format(series.min(),data_range)
+    return norm_series, to_real_units, to_norm_units
     
     
 
@@ -81,10 +83,10 @@ def normalize_dataset (df,return_converters=False):
     norm_df = pd.DataFrame()
     
     norm_df['date'] = df['date'].astype(int)/1e9
-    norm_df['date'], convert_date = norm(norm_df['date'],method="range")
-    norm_df['latitude'], convert_lat = norm(df['latitude'])
-    norm_df['longitude'], convert_long = norm(df['longitude'])
-    norm_df['area'], convert_area = norm(df['area'])
+    norm_df['date'], real_date, norm_date = norm(norm_df['date'],method="range")
+    norm_df['latitude'], real_lat, norm_lat = norm(df['latitude'])
+    norm_df['longitude'], real_long, norm_long = norm(df['longitude'])
+    norm_df['area'], real_area, norm_area = norm(df['area'])
 
     # code the bedrooms as binary variables
 
@@ -107,9 +109,10 @@ def normalize_dataset (df,return_converters=False):
     norm_df['pets'] = df['pets']
     norm_df['furnished'] = df['furnished']
 
-    norm_df['price'], convert_price = norm(df['price'])
+    norm_df['price'], real_price, norm_price = norm(df['price'])
 
-    conversion_functions = {'date': convert_date, 'latitude': convert_lat, 'longitude': convert_long, 'area': convert_area, 'price': convert_price}
+    conversion_functions = {'to_date': real_date, 'to_latitude': real_lat, 'to_longitude': real_long, 'to_area': real_area, 'to_price': real_price,
+                            'from_date': norm_date, 'from_latitude': norm_lat, 'from_longitude': norm_long, 'from_area': norm_area, 'from_price': norm_price}
     if return_converters:
         return norm_df, conversion_functions
     else:
