@@ -19,6 +19,7 @@ import pandas as pd
 import sys
 from rss_feeds import supported_cities, rss_feeds
 import matplotlib.path as mplPath
+from google.cloud import bigquery
 
 #url = "http://vancouver.craigslist.ca/search/apa?format=rss&is_paid=all&max_price=2000&min_price=1000&postedToday=1"
 
@@ -31,6 +32,9 @@ url = rss_feeds[city]
 apts = feedparser.parse( url )
 conn = sqlite3.connect("listings.db")
 c = conn.cursor()
+
+client = bigquery.Client()
+table = client.get_table('bram-185008.craiglist_crawler.{}'.format(city))
 
 def parse_int(string):
     return int(re.sub('[^0-9]', '', string))
@@ -174,7 +178,7 @@ def extra_processor (extras):
     smoking= None
     pets= None
     laundry = None
-    furnished = False
+    furnished = 0
     try:
         details = extras.split(',')
         # Unit
@@ -187,7 +191,7 @@ def extra_processor (extras):
         if 'condo' in details:
             unit_type = 'condo'
         if 'furnished' in details:
-            furnished = True
+            furnished = 1
         
         # Parking
         if 'attached garage' in details:
@@ -203,7 +207,7 @@ def extra_processor (extras):
             
         # Smoking
         if 'no smoking' in details:
-            smoking = False
+            smoking = 0
             
         # Pets
         if 'cats are OK - purrr' in details:
@@ -263,6 +267,10 @@ for entry in reversed(apts.entries):
         sql = "INSERT INTO {} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)".format(city)
         c.execute(sql, [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location])
         conn.commit()
+        
+        response = client.insert_rows(table,[(post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location)])
+        
+        print("Added entry to BigQuery %s" % response)
         print("Added entry %s to db" % post_id)
         time.sleep(1)
     
