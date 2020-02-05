@@ -118,7 +118,13 @@ def normalize_dataset (df,return_converters=False):
     else:
         return norm_df
 
-
-
-
-
+def load_dataset():
+    """
+    This function is used to load the test and train dataset in one command
+    """
+    test = pd.read_pickle("test.pickle")
+    train = pd.read_pickle("train.pickle")
+    converters = pkl.load(open(r'unit_converters.pickle','rb'))
+    converters = {k: eval(v) for k, v in converters.items()}
+    
+    return test, train, converters
