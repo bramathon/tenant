@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
 import pickle as pkl
+from sklearn import metrics
+import plotly.express as px
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 def load_dataset (scale=False,one_hot=False,test_size=0.2,categorize_bedrooms=False):
     """
@@ -70,6 +74,33 @@ def load_dataset (scale=False,one_hot=False,test_size=0.2,categorize_bedrooms=Fa
         return X_train, X_test, y_train, y_test, X_scaler, y_scaler
     else:
         return X_train, X_test, y_train, y_test
+    
+def check_predictions(X_test,y_test,y_pred,n=10):
+    """
+    Prints n test values vs predictions, to get a feel for how well the algorithm is doing.
+    """
+    #df = pd.concat([X_test,pd.Series(y_test,name='y_test'),pd.Series(y_pred,name='y_pred')])
+    y_pred = np.asarray(y_pred)
+    y_test = np.asarray(y_test)
+    y_pred = np.round(y_pred)
+    df = pd.DataFrame({'y_test':y_test,'y_pred':y_pred})
+    df = pd.concat([pd.DataFrame(X_test),df],axis=1)
+    df['error'] = y_test - y_pred
+    return df.sample(n=n)
+
+def core_metrics (y_test,y_pred):
+    y_test = np.asarray(y_test).reshape(-1)
+    y_pred = np.asarray(y_pred).reshape(-1)
+    mae = metrics.mean_absolute_error(y_test,y_pred)
+    r_squared = metrics.explained_variance_score(y_test,y_pred)
+    median_error = metrics.median_absolute_error(y_test,y_pred)
+    print("Mean Absolute Error: {:.0f}".format(mae))
+    print("Median Absolute Error: {:.0f}".format(median_error))
+    print("Explained Variance: {:.2f}".format(r_squared))
+    df = pd.DataFrame({'y_test':y_test,'y_pred':y_pred})
+    df['error'] = y_test - y_pred
+    fig = px.histogram(df,x='error',histnorm='probability density')
+    fig.show()
 
 def train_val_test_split(dataframe, train_frac, val_frac=0):
     '''
@@ -116,6 +147,78 @@ def df_to_features_labels(dataframe):
     y = dataframe['price']
     return x, y
 
+
+from keys import mapbox_access_token
+import plotly.graph_objects as go
+
+# cache the populated coordinates
+
+populated_coordinates = np.array([])
+
+def remove_empty_coords (X_test,coordinates,lat_step,long_step):
+    global populated_coordinates
+    # removes coordinates which have no data
+    if populated_coordinates.any():
+        print('Using cached coordinates')
+        use_coordinates = np.array(populated_coordinates)
+    else:
+        populated_coordinates = []
+        for lat,long in coordinates:
+            if ((X_test['latitude'].between(lat,lat+lat_step)) & (X_test['longitude'].between(long,long + long_step))).any():
+                populated_coordinates.append([lat,long])
+        use_coordinates = np.array(populated_coordinates)
+        populated_coordinates = use_coordinates # set cache
+    return use_coordinates
+    
+
+def map_model (X_test,model):
+    # model should take X_test as an arugment to it's predict function
+    # we are going to map the price for the typical apartment around the whole city
+    
+    # typical apartment characteristics
+    date = X_test['date'].median()
+    area = X_test['area'].median()
+    bedrooms = X_test['bedrooms'].mode()[0]
+    pets = X_test['pets'].mode()[0]
+    furnished = X_test['furnished'].mode()[0]
+    unit_type = X_test['unit_type'].mode()[0]
+    
+    # construct a square grid
+    # throw away any points that are not close to real values
+    lats, lat_step = np.linspace(X_test['latitude'].min(),X_test['latitude'].max(),num=300,retstep=True)
+    longs, long_step = np.linspace(X_test['longitude'].min(),X_test['longitude'].max(),num=300,retstep=True)
+    coordinate_list = np.array(np.meshgrid(lats,longs)).T.reshape(-1,2)
+    
+    # can this be vectorized?
+    # now, remove the rows that aren't near real data
+    # to do this, set a threshold value for how close we need to find a point
+    # for each point in the dataframe, see if there is a point close enough
+    use_coordinates = remove_empty_coords(X_test,coordinate_list,lat_step,long_step)
+
+    df = pd.DataFrame(use_coordinates,columns=['latitude','longitude'])
+    df.loc[:,'date'] = date
+    df.loc[:,'area'] = area
+    df.loc[:,'bedrooms'] = bedrooms
+    df.loc[:,'pets'] = pets
+    df.loc[:,'furnished'] = furnished
+    df.loc[:,'unit_type'] = unit_type
+    df['unit_type'] = pd.Categorical(df['unit_type'])
+    df = df[['date', 'latitude', 'longitude', 'area', 'bedrooms', 'pets', 'furnished', 'unit_type']]
+    
+    #X_geo = df.to_numpy()
+    y_geo = model.predict(df)
+    df['price'] = y_geo
+
+    fig = px.scatter_mapbox(df,lon='longitude',lat='latitude',color='price',width=1000,height=800)
+
+    #fig = go.Figure(go.Scattermapbox(lon=list(map(str,list(df['longitude']))),lat=list(map(str,list(df['latitude'])))))#,marker=go.scattermapbox.Marker(size=14)))
+    #go.scattermapbox.Marker(size=14,symbol='square',color=df['price'])
+    #fig.update_layout(mapbox=dict(accesstoken=mapbox_access_token))
+                  
+    # need to fix view and scatter marker size
+    #fig.data[0].marker = dict(size=10,opacity=0.5,symbol='square')
+    #fig = px.scatter_mapbox(df,lon='longitude',lat='latitude',color='price')
+    return fig
 
 # def norm (series,method="var"):
 #     """
