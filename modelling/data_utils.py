@@ -176,30 +176,32 @@ def remove_empty_coords (X,lats,longs,lat_step,long_step):
         populated_coordinates = use_coordinates # set cache
     return use_coordinates
 
-def map_model (X_test,model):
-    # model should take X_test as an arugment to it's predict function
+def map_model (X,model):
+    # model should take X as an arugment to it's predict function
     # we are going to map the price for the typical apartment around the whole city
     
     # typical apartment characteristics
-    date = X_test['date'].median()
-    area = X_test['area'].median()
-    bedrooms = X_test['bedrooms'].mode()[0]
-    pets = X_test['pets'].mode()[0]
-    furnished = X_test['furnished'].mode()[0]
-    unit_type = X_test['unit_type'].mode()[0]
+    date = X['date'].median()
+    area = X['area'].median()
+    bedrooms = X['bedrooms'].mode()[0]
+    pets = X['pets'].mode()[0]
+    furnished = X['furnished'].mode()[0]
+    unit_type = X['unit_type'].mode()[0]
     
     title = "Price for a {}sqft, {} bed {}".format(area,bedrooms,unit_type)
     
-    lats, lat_step = np.linspace(X_test['latitude'].min(),X_test['latitude'].max(),num=300,retstep=True)
-    longs, long_step = np.linspace(X_test['longitude'].min(),X_test['longitude'].max(),num=600,retstep=True)
+    lats, lat_step = np.linspace(X['latitude'].min(),X['latitude'].max(),num=300,retstep=True)
+    longs, long_step = np.linspace(X['longitude'].min(),X['longitude'].max(),num=600,retstep=True)
     coordinate_list = np.array(np.meshgrid(lats,longs)).T.reshape(-1,2)
     
-    use_coordinates = remove_empty_coords(X_test,lats,longs,lat_step,long_step)
+    use_coordinates = remove_empty_coords(X,lats,longs,lat_step,long_step)
 
     df = pd.DataFrame(use_coordinates,columns=['latitude','longitude'])
     df.loc[:,'date'] = date
     df.loc[:,'area'] = area
     df.loc[:,'bedrooms'] = bedrooms
+    if X['bedrooms'].dtype.name == 'category':
+        df['bedrooms'] = pd.Categorical(df['bedrooms'])
     df.loc[:,'pets'] = pets
     df.loc[:,'furnished'] = furnished
     df.loc[:,'unit_type'] = unit_type
@@ -210,7 +212,7 @@ def map_model (X_test,model):
     df['Price ($)'] = y_geo
     df['marker_size'] = 8
     center = dict(lat=49.2623962, lon=-123.115429) # city hall
-    fig = px.scatter_mapbox(df,lon='longitude',lat='latitude',color='Price ($)',width=1200,height=1000,center=center,size='marker_size',
+    fig = px.scatter_mapbox(df,lon='longitude',lat='latitude',color='Price ($)',width=1200,height=1000,center=center,
                             zoom=11,size_max=5,opacity=0.6,title=title)
     
 #     fig = go.Figure()
@@ -228,8 +230,6 @@ def time_evolution (X,model):
     """
     # typical apartment characteristics
     area = X['area'].median()
-    lat = X['latitude'].median()
-    long = X['longitude'].median()
     bedrooms = X['bedrooms'].mode()[0]
     pets = X['pets'].mode()[0]
     furnished = X['furnished'].mode()[0]
@@ -239,11 +239,11 @@ def time_evolution (X,model):
     
     dates = np.linspace(X['date'].min(),X['date'].max(),num=24)
     
-    lats, lat_step = np.linspace(X_test['latitude'].min(),X_test['latitude'].max(),num=300,retstep=True)
-    longs, long_step = np.linspace(X_test['longitude'].min(),X_test['longitude'].max(),num=600,retstep=True)
+    lats, lat_step = np.linspace(X['latitude'].min(),X['latitude'].max(),num=300,retstep=True)
+    longs, long_step = np.linspace(X['longitude'].min(),X['longitude'].max(),num=600,retstep=True)
     coordinate_list = np.array(np.meshgrid(lats,longs)).T.reshape(-1,2)
     
-    use_coordinates = remove_empty_coords(X_test,lats,longs,lat_step,long_step)
+    use_coordinates = remove_empty_coords(X,lats,longs,lat_step,long_step)
     
     prices = []
     
@@ -252,6 +252,8 @@ def time_evolution (X,model):
         df.loc[:,'date'] = d
         df.loc[:,'area'] = area
         df.loc[:,'bedrooms'] = bedrooms
+        if X['bedrooms'].dtype.name == 'category':
+            df['bedrooms'] = pd.Categorical(df['bedrooms'])
         df.loc[:,'pets'] = pets
         df.loc[:,'furnished'] = furnished
         df.loc[:,'unit_type'] = unit_type
@@ -262,4 +264,4 @@ def time_evolution (X,model):
         
     plot_df = pd.DataFrame({'Date': dates, 'Price ($)': prices})
     plot_df['Date'] = pd.to_datetime(plot_df['Date'],unit='s')
-    return px.scatter(plot_df,x='Date',y='Price ($)',trendline='ols',title=titleheight=1000,width=1200)
+    return px.scatter(plot_df,x='Date',y='Price ($)',trendline='ols',title=title,height=1000,width=1200)
