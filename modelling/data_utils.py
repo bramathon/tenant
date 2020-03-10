@@ -24,10 +24,10 @@ def load_dataset (scale=False,one_hot=False,test_size=0.2,categorize_bedrooms=Fa
     
     y['price'] = raw_df['price']
     
-    if scale:
-        y_scaler = StandardScaler()
-        y_array = y['price'].to_numpy().reshape(-1, 1)
-        y['price'] = y_scaler.fit_transform(y_array)
+#     if scale:
+#         y_scaler = StandardScaler()
+#         y_array = y['price'].to_numpy().reshape(-1, 1)
+#         y['price'] = y_scaler.fit_transform(y_array)
     
     scaled_columns = ['date', 'latitude', 'longitude', 'area']
     category_columns = ['unit_type']
@@ -71,7 +71,7 @@ def load_dataset (scale=False,one_hot=False,test_size=0.2,categorize_bedrooms=Fa
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
     if scale:
-        return X_train, X_test, y_train, y_test, X_scaler, y_scaler
+        return X_train, X_test, y_train, y_test, X_scaler#, y_scaler
     else:
         return X_train, X_test, y_train, y_test
     
@@ -176,44 +176,50 @@ def remove_empty_coords (X,lats,longs,lat_step,long_step):
         populated_coordinates = use_coordinates # set cache
     return use_coordinates
 
-def map_model (X,model):
+def map_model (X,model,scaler=None):
     # model should take X as an arugment to it's predict function
-    # we are going to map the price for the typical apartment around the whole city
-    
-    # typical apartment characteristics
-    date = X['date'].median()
-    area = X['area'].median()
-    bedrooms = X['bedrooms'].mode()[0]
-    pets = X['pets'].mode()[0]
-    furnished = X['furnished'].mode()[0]
-    unit_type = X['unit_type'].mode()[0]
-    
-    title = "Price for a {}sqft, {} bed {}".format(area,bedrooms,unit_type)
-    
+    # we are going to map the price for the typical apartment around the whole city        
     lats, lat_step = np.linspace(X['latitude'].min(),X['latitude'].max(),num=300,retstep=True)
     longs, long_step = np.linspace(X['longitude'].min(),X['longitude'].max(),num=600,retstep=True)
     coordinate_list = np.array(np.meshgrid(lats,longs)).T.reshape(-1,2)
     
     use_coordinates = remove_empty_coords(X,lats,longs,lat_step,long_step)
-
-    df = pd.DataFrame(use_coordinates,columns=['latitude','longitude'])
-    df.loc[:,'date'] = date
-    df.loc[:,'area'] = area
-    df.loc[:,'bedrooms'] = bedrooms
-    if X['bedrooms'].dtype.name == 'category':
-        df['bedrooms'] = pd.Categorical(df['bedrooms'])
-    df.loc[:,'pets'] = pets
-    df.loc[:,'furnished'] = furnished
-    df.loc[:,'unit_type'] = unit_type
-    df['unit_type'] = pd.Categorical(df['unit_type'])
-    df = df[['date', 'latitude', 'longitude', 'area', 'bedrooms', 'pets', 'furnished', 'unit_type']]
     
+    cols = list(X.keys())
+    df = pd.DataFrame(columns=cols) # make sure to keep the ordering
+    cols.insert(0, cols.pop(cols.index('longitude')))
+    cols.insert(0, cols.pop(cols.index('latitude')))
+    for c in cols:
+        if c == 'bedrooms':
+            df.loc[:,'bedrooms'] = X[c].mode()[0]
+            if X['bedrooms'].dtype.name == 'category':
+                df['bedrooms'] = pd.Categorical(df['bedrooms'])
+        elif c == 'bedrooms_2.0':
+            df.loc[:,'bedrooms_2.0'] = 1.0
+        elif c == 'latitude':
+            df['latitude'] = use_coordinates[:,0]
+        elif c == 'longitude':
+            df['longitude'] = use_coordinates[:,1]
+        elif c == 'unit_type':
+            df.loc[:,c] = X[c].mode()[0]
+            df['unit_type'] = pd.Categorical(df['unit_type'])
+        else:
+            df.loc[:,c] = X[c].median()
+        
     y_geo = model.predict(df)
     df['Price ($)'] = y_geo
-    df['marker_size'] = 8
+    
+    if scaler:
+        df[['date','latitude','longitude','area']] = scaler.inverse_transform(df[['date','latitude','longitude','area']])
+    
+    bedrooms = df['bedrooms'].mode()[0] if 'bedrooms' in cols else 2
+    unit_type = df['unit_type'].mode()[0] if 'unit_type' in cols else 'apartment'
+    title = "Price for a {}sqft, {} bed {}".format(df['area'].median(),bedrooms,unit_type)
+    
     center = dict(lat=49.2623962, lon=-123.115429) # city hall
     fig = px.scatter_mapbox(df,lon='longitude',lat='latitude',color='Price ($)',width=1200,height=1000,center=center,
                             zoom=11,size_max=5,opacity=0.6,title=title)
+    
     
 #     fig = go.Figure()
 #     fig.add_trace(go.Scattermapbox(lon=df['longitude'],
