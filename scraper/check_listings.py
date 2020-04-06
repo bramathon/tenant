@@ -43,6 +43,10 @@ def get_title(soup):
     title= soup.find_all(id='titletextonly')[0]
     return title.find(text=True, recursive=False).strip()
 
+def get_body(soup):
+    body = soup.find(id="postingbody").get_text()
+    return body
+
 def get_bedrooms(soup):
     try:
         bedrooms = soup.select('.housing')[0]
@@ -227,7 +231,7 @@ def extra_processor (extras):
     except:
         None
     return [unit_type, parking, smoking, pets, laundry, furnished]
-    
+
 for entry in reversed(apts.entries):
     # Grab some in info from the entry
     post_date = entry.updated
@@ -257,18 +261,21 @@ for entry in reversed(apts.entries):
         bedrooms = get_bedrooms(soup)
         bathrooms = get_bathrooms(soup)
         extras = get_all_the_stuff(soup)
+        body = get_body(soup)
         unit_type, parking, smoking, pets, laundry, furnished = extra_processor(extras)
         date_available = get_date_available(soup)
         neighbourhood = get_neighbourhood(latitude,longitude)
         location = get_location(soup)
         muni = get_muni(latitude,longitude)
         
-        listing = [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood,location,extras,bedrooms,bathrooms,muni]
+        listing = [post_date, post_id, title, latitude, longitude, address,
+                   date_available, price, area, neighbourhood, location,
+                   extras, bedrooms, bathrooms, muni, body]
         sql = "INSERT INTO {} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)".format(city)
-        c.execute(sql, [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location])
+        c.execute(sql, [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body])
         conn.commit()
         
-        response = client.insert_rows(table,[(post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location)])
+        response = client.insert_rows(table,[(post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body)])
         
         print("Added entry to BigQuery %s" % response)
         print("Added entry %s to db" % post_id)
