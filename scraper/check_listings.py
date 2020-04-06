@@ -271,7 +271,7 @@ for entry in reversed(apts.entries):
         listing = [post_date, post_id, title, latitude, longitude, address,
                    date_available, price, area, neighbourhood, location,
                    extras, bedrooms, bathrooms, muni, body]
-        sql = "INSERT INTO {} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)".format(city)
+        sql = "INSERT INTO {} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)".format(city)
         c.execute(sql, [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body])
         conn.commit()
         
