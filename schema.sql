@@ -102,3 +102,7 @@ CREATE INDEX to_id_date on toronto (id,date);
 
 CREATE INDEX mtl_id on montreal (id);
 CREATE INDEX mtl_id_date on montreal (id,date);
+
+ALTER TABLE "vancouver" ADD "body" TEXT;
+ALTER TABLE "montreal" ADD "body" TEXT;
+ALTER TABLE "portland" ADD "body" TEXT;
