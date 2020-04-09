@@ -270,12 +270,11 @@ for entry in reversed(apts.entries):
         
         listing = [post_date, post_id, title, latitude, longitude, address,
                    date_available, price, area, neighbourhood, location,
-                   extras, bedrooms, bathrooms, muni, body]
-        sql = "INSERT INTO {} VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)".format(city)
-        c.execute(sql, [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body])
+                   extras, bedrooms, bathrooms, muni, body, city]
+        c.execute("INSERT INTO city VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body])
         conn.commit()
         
-        response = client.insert_rows(table,[(post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body)])
+        response = client.insert_rows(table,[(post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body, city)])
         
         print("Added entry to BigQuery %s" % response)
         print("Added entry %s to db" % post_id)
