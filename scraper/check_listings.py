@@ -30,11 +30,11 @@ assert city in supported_cities
 
 url = rss_feeds[city]
 apts = feedparser.parse( url )
-conn = sqlite3.connect("listings.db")
+conn = sqlite3.connect("listings-v3.db")
 c = conn.cursor()
 
 client = bigquery.Client()
-table = client.get_table('bram-185008.craiglist_crawler.{}'.format(city))
+table = client.get_table('bram-185008.craiglist_crawler.listings')
 
 def parse_int(string):
     return int(re.sub('[^0-9]', '', string))
@@ -240,7 +240,7 @@ for entry in reversed(apts.entries):
     print(post_date)
     print(post_id)
     # check if the entry is already in the database
-    sql = "SELECT * FROM {} WHERE id = ? AND date = ?".format(city)
+    sql = "SELECT * FROM listings WHERE id = ? AND date = ?"
     c.execute(sql, [post_id,post_date])
     if c.fetchone():
         print("Already in db...")
@@ -271,7 +271,7 @@ for entry in reversed(apts.entries):
         listing = [post_date, post_id, title, latitude, longitude, address,
                    date_available, price, area, neighbourhood, location,
                    extras, bedrooms, bathrooms, muni, body, city]
-        c.execute("INSERT INTO city VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body])
+        c.execute("INSERT INTO listings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body, city])
         conn.commit()
         
         response = client.insert_rows(table,[(post_date, post_id, title, latitude, longitude, address, date_available, price, area, neighbourhood, extras, bedrooms, bathrooms, unit_type, parking, smoking, pets, laundry, furnished, muni, location, body, city)])

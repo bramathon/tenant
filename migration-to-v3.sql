@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS "listings" (
   "furnished" INTEGER,
   "City" TEXT,
   "location" TEXT,
+  "body" TEXT,
   "metro" TEXT
 );
 
