@@ -1,0 +1,30 @@
+name: craiglist-crawler
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - pandas
+  - scipy
+  - beautifulsoup4
+  - feedparser
+  - lxml
+  - pyparsing
+  - matplotlib
+  - scikit-learn
+  - plotly::plotly
+  - plotly::plotly-orca
+  - ipykernel
+  - ipywidgets
+  - dash
+  - tqdm
+  - requests
+  - psutil
+  - pip
+  - jupyterlab
+  - jupyterlab-git
+  - lightgbm
+  - pip:
+    - wandb
+
+prefix: /home/bram/.anaconda3/envs/craiglist-crawler
