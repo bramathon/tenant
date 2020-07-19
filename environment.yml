@@ -1,4 +1,4 @@
-name: craiglist-crawler
+name: craiglist_crawler
 channels:
   - conda-forge
   - defaults
@@ -24,7 +24,11 @@ dependencies:
   - jupyterlab
   - jupyterlab-git
   - lightgbm
+  - google-cloud-bigquery
   - pip:
+    - -e .
     - wandb
+    - jupyterlab-git
+    - python-language-server[all]
 
-prefix: /home/bram/.anaconda3/envs/craiglist-crawler
+prefix: ~/.anaconda3/envs/craiglist_crawler
