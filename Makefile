@@ -4,24 +4,22 @@
 # GLOBALS                                                                       #
 #################################################################################
 
+SHELL=/bin/bash
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PROJECT_NAME = craiglist_crawler
 PYTHON_INTERPRETER = python
-
-ifeq (,$(shell which conda))
-HAS_CONDA=False
-else
-HAS_CONDA=True
-endif
+CONDA_ROOT=~/.anaconda3
+ENV_NAME=craiglist_crawler
+MY_ENV_DIR=$(CONDA_ROOT)/envs/$(ENV_NAME)
 
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
 
 ## Make Dataset
-data: requirements
+data: environment.yml
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
 
 ## Delete all compiled Python files
@@ -34,15 +32,26 @@ lint:
 	flake8 src
 
 ## Download data from db
-get_data:
+get_data: environment
 	$(PYTHON_INTERPRETER) src/data/get_dataset.py
 
-## Set up python interpreter environment
-environment: environment.yml
-	conda env create -f environment.yml
-	conda activate craigslist_crawler
+## Build Jupyter Environment
+jupyter: environment.yml
+	source $(CONDA_ROOT)/bin/activate $(ENV_NAME)
+	jupyter labextension install @jupyter-widgets/jupyterlab-manager --no-build
+	jupyter labextension install jupyterlab-plotly --no-build
+	jupyter labextension install plotlywidget --no-build
+	jupyter lab build --name "craigslab"
 
+## Set up python interpreter environment
 environment.yml:
+ifneq ("$(wildcard $(MY_ENV_DIR))","") # check if the directory is there
+	conda env update $(ENV_NAME) --file environment.yml --prune
+	ipython kernel install --name $(ENV_NAME) --user
+else
+	conda env create -f environment.yml
+	ipython kernel install --name $(ENV_NAME) --user
+endif
 
 #################################################################################
 # PROJECT RULES                                                                 #
