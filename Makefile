@@ -10,9 +10,15 @@ BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PROJECT_NAME = craiglist_crawler
 PYTHON_INTERPRETER = python
-CONDA_ROOT=~/.anaconda3
+CONDA_ROOT=$(shell conda info --base)
 ENV_NAME=craiglist_crawler
 MY_ENV_DIR=$(CONDA_ROOT)/envs/$(ENV_NAME)
+
+# conda activate does stuff other than just modifying path. This is a more complete way to run a
+# a command in a conda env
+# Note that the extra activate is needed to ensure that the activate floats env to the front of PATH
+CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
+
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -36,15 +42,15 @@ get_data: environment
 	$(PYTHON_INTERPRETER) src/data/get_dataset.py
 
 ## Build Jupyter Environment
-jupyter: environment.yml
-	source $(CONDA_ROOT)/bin/activate $(ENV_NAME)
-	jupyter labextension install @jupyter-widgets/jupyterlab-manager --no-build
-	jupyter labextension install jupyterlab-plotly --no-build
-	jupyter labextension install plotlywidget --no-build
-	jupyter lab build --name "craigslab"
+jupyter: environment
+	$(MY_ENV_DIR)/bin/jupyter labextension install @jupyter-widgets/jupyterlab-manager
+	$(MY_ENV_DIR)/bin/jupyter labextension install jupyterlab-plotly
+	$(MY_ENV_DIR)/bin/jupyter labextension install plotlywidget
+	$(MY_ENV_DIR)/bin/jupyter labextension install jupyterlab-theme-solarized-dark
+	$(MY_ENV_DIR)/bin/jupyter lab build --name "craigslab"
 
 ## Set up python interpreter environment
-environment.yml:
+environment: environment.yml
 ifneq ("$(wildcard $(MY_ENV_DIR))","") # check if the directory is there
 	conda env update $(ENV_NAME) --file environment.yml --prune
 	ipython kernel install --name $(ENV_NAME) --user
@@ -52,6 +58,10 @@ else
 	conda env create -f environment.yml
 	ipython kernel install --name $(ENV_NAME) --user
 endif
+	@echo ">>> Conda env ${ENV_NAME) ready. Activate with:\nconda activate $(ENV_NAME)"
+	touch environment # emtpy file which keeps track of when this rule was last run
+
+environment.yml:
 
 #################################################################################
 # PROJECT RULES                                                                 #
