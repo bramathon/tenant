@@ -1,4 +1,4 @@
-.PHONY: clean data lint get_data
+.PHONY: clean data lint get_data test_environment
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -25,8 +25,10 @@ CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activ
 #################################################################################
 
 ## Make Dataset
-data: environment.yml
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+data/raw/vancouver_data.parquet: test_environment
+	$(PYTHON_INTERPRETER) craiglist_crawler/data/make_dataset.py \
+	--metro "vancouver" \
+	--output_file "data/raw/vancouver_data.parquet"
 
 ## Delete all compiled Python files
 clean:
@@ -35,33 +37,36 @@ clean:
 
 ## Lint using flake8
 lint:
-	flake8 src
+	flake8 craiglist_crawler
 
 ## Download data from db
-get_data: environment
-	$(PYTHON_INTERPRETER) src/data/get_dataset.py
 
 ## Build Jupyter Environment
-jupyter: environment
+jupyter: environment test_environment
+	ipython kernel install --name $(ENV_NAME) --user
 	$(MY_ENV_DIR)/bin/jupyter labextension install @jupyter-widgets/jupyterlab-manager
 	$(MY_ENV_DIR)/bin/jupyter labextension install jupyterlab-plotly
 	$(MY_ENV_DIR)/bin/jupyter labextension install plotlywidget
 	$(MY_ENV_DIR)/bin/jupyter labextension install jupyterlab-theme-solarized-dark
 	$(MY_ENV_DIR)/bin/jupyter lab build --name "craigslab"
 
+## Test python environment is set-up correctly
+test_environment: environment-built
+ifneq (${CONDA_DEFAULT_ENV}, $(PROJECT_NAME))
+	$(error Must activate `$(PROJECT_NAME)` environment before proceeding)
+endif
+
 ## Set up python interpreter environment
-environment: environment.yml
+environment-built: environment.yml
 ifneq ("$(wildcard $(MY_ENV_DIR))","") # check if the directory is there
 	conda env update $(ENV_NAME) --file environment.yml --prune
-	ipython kernel install --name $(ENV_NAME) --user
 else
 	conda env create -f environment.yml
-	ipython kernel install --name $(ENV_NAME) --user
 endif
-	@echo ">>> Conda env ${ENV_NAME) ready. Activate with:\nconda activate $(ENV_NAME)"
-	touch environment # emtpy file which keeps track of when this rule was last run
+	@echo ">>> Conda env $(ENV_NAME) ready. Activate with 'conda activate $(ENV_NAME)'"
+	touch environment-built
 
-environment.yml:
+
 
 #################################################################################
 # PROJECT RULES                                                                 #

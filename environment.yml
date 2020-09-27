@@ -13,22 +13,24 @@ dependencies:
   - matplotlib
   - scikit-learn
   - plotly::plotly
-  - plotly::plotly-orca
+  - plotly::python-kaleido
   - ipykernel
   - ipywidgets
   - dash
   - tqdm
   - requests
   - psutil
-  - pip
   - jupyterlab
   - jupyterlab-git
   - lightgbm
   - google-cloud-bigquery
+  - pip
   - pip:
     - -e .
+    - python-dotenv
     - wandb
     - jupyterlab-git
     - python-language-server[all]
+    - papermill[all]
 
 prefix: ~/.anaconda3/envs/craiglist_crawler
