@@ -20,13 +20,14 @@ dependencies:
   - tqdm
   - requests
   - psutil
-  - pip
   - jupyterlab
   - jupyterlab-git
   - lightgbm
   - google-cloud-bigquery
+  - pip
   - pip:
     - -e .
+    - python-dotenv
     - wandb
     - jupyterlab-git
     - python-language-server[all]

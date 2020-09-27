@@ -25,8 +25,10 @@ CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activ
 #################################################################################
 
 ## Make Dataset
-data: test_environment
-	$(PYTHON_INTERPRETER) craiglist_crawler/data/make_dataset.py data/raw data/processed
+data/raw/vancouver_data.parquet: test_environment
+	$(PYTHON_INTERPRETER) craiglist_crawler/data/make_dataset.py \
+	--metro "vancouver" \
+	--output_file "data/raw/vancouver_data.parquet"
 
 ## Delete all compiled Python files
 clean:
@@ -38,8 +40,6 @@ lint:
 	flake8 craiglist_crawler
 
 ## Download data from db
-get_data: environment
-	$(PYTHON_INTERPRETER) craiglist_crawler/data/get_dataset.py
 
 ## Build Jupyter Environment
 jupyter: environment test_environment
@@ -50,21 +50,23 @@ jupyter: environment test_environment
 	$(MY_ENV_DIR)/bin/jupyter labextension install jupyterlab-theme-solarized-dark
 	$(MY_ENV_DIR)/bin/jupyter lab build --name "craigslab"
 
+## Test python environment is set-up correctly
+test_environment: environment-built
+ifneq (${CONDA_DEFAULT_ENV}, $(PROJECT_NAME))
+	$(error Must activate `$(PROJECT_NAME)` environment before proceeding)
+endif
+
 ## Set up python interpreter environment
-environment: environment.yml
+environment-built: environment.yml
 ifneq ("$(wildcard $(MY_ENV_DIR))","") # check if the directory is there
 	conda env update $(ENV_NAME) --file environment.yml --prune
 else
 	conda env create -f environment.yml
 endif
 	@echo ">>> Conda env $(ENV_NAME) ready. Activate with 'conda activate $(ENV_NAME)'"
-	touch environment # emtpy file which keeps track of when this rule was last run
+	touch environment-built
 
-## Test python environment is set-up correctly
-test_environment: environment.yml
-ifneq (${CONDA_DEFAULT_ENV}, $(PROJECT_NAME))
-	$(error Must activate `$(PROJECT_NAME)` environment before proceeding)
-endif
+
 
 #################################################################################
 # PROJECT RULES                                                                 #
